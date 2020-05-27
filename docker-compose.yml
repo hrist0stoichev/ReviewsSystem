@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:12.3-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: reviewssystem
+    networks:
+      - backend
+
+  backend:
+    build: .
+    ports:
+      - '8001:8001'
+    depends_on:
+      - postgres
+    environment:
+      DBRDB_HOST: postgres
+      DBRDB_DBNAME: reviewssystem
+      DBRDB_MIGRATIONS_DIR: /db-migrations
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
