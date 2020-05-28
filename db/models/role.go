@@ -29,11 +29,12 @@ func (r Role) Value() (driver.Value, error) {
 }
 
 func (r *Role) Scan(value interface{}) error {
-	valueString, ok := value.(string)
+	valueByte, ok := value.([]byte)
 	if !ok {
-		return errors.New("role is not a string")
+		return errors.New("role is not a byte array")
 	}
 
+	valueString := string(valueByte)
 	for i, role := range roles {
 		if role == valueString {
 			*r = Role(uint8(i))

@@ -19,9 +19,18 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	router := mux.NewRouter()
 
 	apiRouter := router.PathPrefix("/api").Subrouter()
+	apiRouter.Use(commonMiddleware)
 
 	apiV1Router := apiRouter.PathPrefix("/v1").Subrouter()
 	apiV1Router.Methods(http.MethodPost).Path("/users").HandlerFunc(usersController.Register)
+	apiV1Router.Methods(http.MethodPost).Path("/token").HandlerFunc(usersController.Login)
 
 	return router
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }

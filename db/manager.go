@@ -1,7 +1,13 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/hrist0stoichev/ReviewsSystem/db/stores"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 type Manager interface {

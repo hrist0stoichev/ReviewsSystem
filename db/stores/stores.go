@@ -6,4 +6,5 @@ import (
 
 type UsersStore interface {
 	Insert(user *models.User) error
+	GetByEmail(email string) (*models.User, error)
 }

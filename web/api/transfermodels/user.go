@@ -7,3 +7,8 @@ type CreateUserRequest struct {
 	ConfirmPassword string `json:"confirm_password"`
 	IsOwner         bool   `json:"is_owner"`
 }
+
+type LoginRequest struct {
+	Email    string
+	Password string
+}

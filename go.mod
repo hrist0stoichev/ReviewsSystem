@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/caarlos0/env/v6 v6.2.2
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/gocraft/dbr/v2 v2.7.0
 	github.com/golang-migrate/migrate/v4 v4.11.0

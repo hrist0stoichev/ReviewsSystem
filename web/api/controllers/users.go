@@ -10,6 +10,11 @@ import (
 	"github.com/hrist0stoichev/ReviewsSystem/web/api/transfermodels"
 )
 
+const (
+	InvalidCredentials = "Invalid username or password"
+	EmailNotConfirmed  = "Email is not confirmed"
+)
+
 type usersController struct {
 	usersService services.UsersService
 	baseController
@@ -28,8 +33,8 @@ func NewUsers(usersService services.UsersService, logger log.Logger, validator V
 func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) {
 	userRequest := transfermodels.CreateUserRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&userRequest); err != nil {
-		uc.logger.WithError(err).Warnln("Could not decode request body")
-		http.Error(res, "a problem occurred while reading user request", http.StatusBadRequest)
+		uc.logger.WithError(err).Warnln(ModelDecodeError)
+		http.Error(res, ModelDecodeError, http.StatusBadRequest)
 		return
 	}
 
@@ -59,4 +64,51 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 	}
 
 	res.WriteHeader(http.StatusOK)
+}
+
+func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
+	loginRequest := transfermodels.LoginRequest{}
+	if err := json.NewDecoder(req.Body).Decode(&loginRequest); err != nil {
+		uc.logger.WithError(err).Warnln(ModelDecodeError)
+		http.Error(res, ModelDecodeError, http.StatusBadRequest)
+		return
+	}
+
+	if err := uc.validator.Struct(loginRequest); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := uc.usersService.GetByEmail(loginRequest.Email)
+	if err != nil {
+		if err == services.ErrUserNotFound {
+			http.Error(res, InvalidCredentials, http.StatusUnauthorized)
+			return
+		}
+
+		uc.logger.WithError(err).Warnln("Could not get username by email")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	if !uc.usersService.PasswordsMatch(&loginRequest.Password, &user.HashedPassword) {
+		http.Error(res, InvalidCredentials, http.StatusUnauthorized)
+		return
+	}
+
+	if !user.EmailConfirmed {
+		http.Error(res, EmailNotConfirmed, http.StatusUnauthorized)
+		return
+	}
+
+	jwt, err := uc.usersService.GenerateToken(user)
+	if err != nil {
+		uc.logger.WithError(err).Warnln("Could not generate token")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	if err = json.NewEncoder(res).Encode(jwt); err != nil {
+		uc.logger.WithError(err).Warnln("Could not encode JWT")
+	}
 }
