@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/log"
@@ -16,13 +17,23 @@ const (
 )
 
 type usersController struct {
-	usersService services.UsersService
+	usersService      services.UsersService
+	encryptionService services.EncryptionService
+	tokensService     services.TokensService
 	baseController
 }
 
-func NewUsers(usersService services.UsersService, logger log.Logger, validator Validator) *usersController {
+func NewUsers(
+	usersService services.UsersService,
+	encryptionService services.EncryptionService,
+	tokensService services.TokensService,
+	logger log.Logger,
+	validator Validator,
+) *usersController {
 	return &usersController{
-		usersService: usersService,
+		usersService:      usersService,
+		encryptionService: encryptionService,
+		tokensService:     tokensService,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -47,9 +58,17 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
+	saltedHash, err := uc.encryptionService.GenerateSaltedHash(&userRequest.Password)
+	if err != nil {
+		uc.logger.WithError(err).Warnln("Could not generate salted hash")
+		http.Error(res, "", http.StatusInternalServerError)
+		return
+	}
+
 	user := &models.User{
 		Email:          userRequest.Email,
 		EmailConfirmed: false,
+		HashedPassword: saltedHash,
 		Role:           models.Regular,
 	}
 
@@ -57,7 +76,7 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		user.Role = models.Owner
 	}
 
-	if err = uc.usersService.CreateUser(user, &userRequest.Password); err != nil {
+	if err = uc.usersService.CreateUser(user); err != nil {
 		uc.logger.WithError(err).Warnln("Could not create user")
 		http.Error(res, "a problem occurred while creating a user", http.StatusBadRequest)
 		return
@@ -91,7 +110,7 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !uc.usersService.PasswordsMatch(&loginRequest.Password, &user.HashedPassword) {
+	if !uc.encryptionService.PasswordsMatch(&loginRequest.Password, &user.HashedPassword) {
 		http.Error(res, InvalidCredentials, http.StatusUnauthorized)
 		return
 	}
@@ -101,14 +120,24 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jwt, err := uc.usersService.GenerateToken(user)
+	jwt, claims, err := uc.tokensService.GenerateSignedToken(&services.UserClaims{
+		Id:   user.Id,
+		Role: user.Role.String(),
+	})
 	if err != nil {
-		uc.logger.WithError(err).Warnln("Could not generate token")
+		uc.logger.WithError(err).Warnln("Could not generate jwt")
 		http.Error(res, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
-	if err = json.NewEncoder(res).Encode(jwt); err != nil {
-		uc.logger.WithError(err).Warnln("Could not encode JWT")
+	resp := transfermodels.LoginResponse{
+		Token:   jwt,
+		Expires: time.Unix(claims.ExpiresAt.Unix(), 0),
+		Email:   user.Email,
+		Role:    claims.Role,
+	}
+
+	if err = json.NewEncoder(res).Encode(resp); err != nil {
+		uc.logger.WithError(err).Warnln("Could not encode response")
 	}
 }
