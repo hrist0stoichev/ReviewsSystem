@@ -52,12 +52,21 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	err := uc.validator.Struct(userRequest)
-	userRequest.ConfirmPassword = ""
-
-	// TODO: should we cast err.(validator.ValidationErrors)? https://github.com/go-playground/validator/blob/master/_examples/simple/main.go
-	if err != nil {
+	if err := uc.validator.Struct(userRequest); err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Check if the user already exists
+	_, err := uc.usersService.GetByEmail(userRequest.Email)
+	if err != services.ErrUserNotFound {
+		if err == nil {
+			http.Error(res, "User already exists", http.StatusConflict)
+			return
+		}
+
+		uc.logger.WithError(err).Warnln("could not get user by email")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
@@ -101,11 +110,6 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	if err := json.NewDecoder(req.Body).Decode(&loginRequest); err != nil {
 		uc.logger.WithError(err).Warnln(ModelDecodeError)
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
-		return
-	}
-
-	if err := uc.validator.Struct(loginRequest); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 

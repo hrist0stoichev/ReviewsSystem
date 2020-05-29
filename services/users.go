@@ -27,7 +27,6 @@ func NewUserService(dbManager db.Manager) UsersService {
 }
 
 func (us *usersService) CreateUser(user *models.User) error {
-	// TODO: Return custom error if email already exists
 	err := us.db.Users().Insert(user)
 	return errors.Wrap(err, "could not insert user in the database")
 }
