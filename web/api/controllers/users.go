@@ -20,6 +20,7 @@ type usersController struct {
 	usersService      services.UsersService
 	encryptionService services.EncryptionService
 	tokensService     services.TokensService
+	emailsService     services.EmailsService
 	baseController
 }
 
@@ -27,6 +28,7 @@ func NewUsers(
 	usersService services.UsersService,
 	encryptionService services.EncryptionService,
 	tokensService services.TokensService,
+	emailsService services.EmailsService,
 	logger log.Logger,
 	validator Validator,
 ) *usersController {
@@ -34,6 +36,7 @@ func NewUsers(
 		usersService:      usersService,
 		encryptionService: encryptionService,
 		tokensService:     tokensService,
+		emailsService:     emailsService,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -66,10 +69,11 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 	}
 
 	user := &models.User{
-		Email:          userRequest.Email,
-		EmailConfirmed: false,
-		HashedPassword: saltedHash,
-		Role:           models.Regular,
+		Email:                  userRequest.Email,
+		EmailConfirmed:         false,
+		EmailConfirmationToken: uc.emailsService.GenerateRandomEmailToken(),
+		HashedPassword:         saltedHash,
+		Role:                   models.Regular,
 	}
 
 	if userRequest.IsOwner {
@@ -81,6 +85,13 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		http.Error(res, "a problem occurred while creating a user", http.StatusBadRequest)
 		return
 	}
+
+	// Send the confirmation email async. A functionality for resending emails should be implemented.
+	go func() {
+		if err = uc.emailsService.SendConfirmationEmail(user.Email, user.EmailConfirmationToken); err != nil {
+			uc.logger.WithError(err).Warnln("could not send confirmation email")
+		}
+	}()
 
 	res.WriteHeader(http.StatusOK)
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -14,15 +15,17 @@ import (
 )
 
 func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Validator) *mux.Router {
+	// TODO: Move the secrets to docker-compose secrets
 	usersService := services.NewUserService(dbManager)
-	// TODO: Move this password to docker-compose secrets
 	tokensService := services.NewTokensService(8*time.Hour, []byte("password"))
 	encryptionService := services.NewEncryptionService(services.DefaultEncryptionCost)
+	emailService := services.NewEmailsService("smtp.gmail.com", "587", "hnstoychev@gmail.com", "", "", "Confirm you registration", "Click here to confirm your registration", "https://website.com/api/v1/confirm-email", "token", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
 
 	usersController := controllers.NewUsers(
 		usersService,
 		encryptionService,
 		tokensService,
+		emailService,
 		logger.WithField("module", "usersController"),
 		validator)
 

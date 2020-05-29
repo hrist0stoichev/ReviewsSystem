@@ -79,37 +79,3 @@ func contains(str string, strs ...string) bool {
 
 	return false
 }
-
-// func (ah *authMiddleware) Do(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		reqToken := r.Header.Get(authorizationHeader)
-// 		if reqToken == "" {
-// 			http.Error(w, unauthorizedErrorMessage, http.StatusUnauthorized)
-// 			return
-// 		}
-//
-// 		splitToken := strings.Split(reqToken, " ")
-// 		if len(splitToken) != 2 {
-// 			http.Error(w, unauthorizedErrorMessage, http.StatusUnauthorized)
-// 			return
-// 		}
-//
-// 		switch splitToken[0] {
-// 		case bearerTokenPrefix:
-// 			userClaims, err := ah.tokensService.ParseSignedToken(splitToken[1])
-// 			if err != nil {
-// 				ah.logger.WithError(err).Warnln("could not parse signed token")
-// 				http.Error(w, unauthorizedErrorMessage, http.StatusUnauthorized)
-// 				return
-// 			}
-//
-// 			r.Header.Add(UserIDHeader, userClaims.Id)
-// 			r.Header.Add(UserRoleHeader, userClaims.Role)
-// 		default:
-// 			http.Error(w, unsupportedAuthorizationMethod, http.StatusUnauthorized)
-// 			return
-// 		}
-//
-// 		next.ServeHTTP(w, r)
-// 	})
-// }

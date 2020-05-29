@@ -24,7 +24,7 @@ func NewUsersStore(session *dbr.Session) stores.UsersStore {
 func (us *usersStore) Insert(user *models.User) error {
 	_, err := us.session.
 		InsertInto(usersTable).
-		Columns("email", "email_confirmed", "hashed_password", "role").
+		Columns("email", "email_confirmed", "email_confirmation_token", "hashed_password", "role").
 		Record(user).
 		Exec()
 
