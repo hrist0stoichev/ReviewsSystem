@@ -14,6 +14,7 @@ var (
 type UsersService interface {
 	CreateUser(user *models.User) error
 	GetByEmail(email string) (*models.User, error)
+	ConfirmEmail(id string) error
 }
 
 type usersService struct {
@@ -42,4 +43,9 @@ func (us *usersService) GetByEmail(email string) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (us *usersService) ConfirmEmail(id string) error {
+	err := us.db.Users().ConfirmEmail(id)
+	return errors.Wrap(err, "could not confirm email")
 }

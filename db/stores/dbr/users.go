@@ -49,3 +49,14 @@ func (us *usersStore) GetByEmail(email string) (*models.User, error) {
 
 	return user, nil
 }
+
+func (us *usersStore) ConfirmEmail(id string) error {
+	_, err := us.session.
+		Update(usersTable).
+		Set("email_confirmed", true).
+		Set("email_confirmation_token", nil).
+		Where("id = ?", id).
+		Exec()
+
+	return errors.Wrap(err, "could not update user fields")
+}

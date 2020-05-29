@@ -77,10 +77,12 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
+	confirmationToken := uc.emailsService.GenerateRandomEmailToken()
+
 	user := &models.User{
 		Email:                  userRequest.Email,
 		EmailConfirmed:         false,
-		EmailConfirmationToken: uc.emailsService.GenerateRandomEmailToken(),
+		EmailConfirmationToken: &confirmationToken,
 		HashedPassword:         saltedHash,
 		Role:                   models.Regular,
 	}
@@ -97,7 +99,7 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 
 	// Send the confirmation email async. A functionality for resending emails should be implemented.
 	go func() {
-		if err = uc.emailsService.SendConfirmationEmail(user.Email, user.EmailConfirmationToken); err != nil {
+		if err = uc.emailsService.SendConfirmationEmail(user.Email, *user.EmailConfirmationToken); err != nil {
 			uc.logger.WithError(err).Warnln("could not send confirmation email")
 		}
 	}()
@@ -155,4 +157,44 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	if err = json.NewEncoder(res).Encode(resp); err != nil {
 		uc.logger.WithError(err).Warnln("Could not encode response")
 	}
+}
+
+func (uc *usersController) ConfirmEmail(res http.ResponseWriter, req *http.Request) {
+	email := req.URL.Query().Get("email")
+	token := req.URL.Query().Get("token")
+
+	if email == "" || token == "" {
+		http.Error(res, "User not found", http.StatusNotFound)
+		return
+	}
+
+	user, err := uc.usersService.GetByEmail(email)
+	if err != nil {
+		if err == services.ErrUserNotFound {
+			http.Error(res, "User not found", http.StatusNotFound)
+			return
+		}
+
+		uc.logger.WithError(err).Warnln("Could not get username by email")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	if user.EmailConfirmed {
+		http.Error(res, "Email already confirmed", http.StatusConflict)
+		return
+	}
+
+	if *user.EmailConfirmationToken != token {
+		http.Error(res, "User not found", http.StatusNotFound)
+		return
+	}
+
+	if err = uc.usersService.ConfirmEmail(user.Id); err != nil {
+		uc.logger.WithError(err).Warnln("could not confirm email")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(res, req, "https://google.com?confirmation_successful=true", http.StatusSeeOther)
 }

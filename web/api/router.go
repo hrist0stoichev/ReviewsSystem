@@ -19,7 +19,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	usersService := services.NewUserService(dbManager)
 	tokensService := services.NewTokensService(8*time.Hour, []byte("password"))
 	encryptionService := services.NewEncryptionService(services.DefaultEncryptionCost)
-	emailService := services.NewEmailsService("smtp.gmail.com", "587", "hnstoychev@gmail.com", "", "", "Confirm you registration", "Click here to confirm your registration", "https://website.com/api/v1/confirm-email", "token", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
+	emailService := services.NewEmailsService("smtp.gmail.com", "587", "", "", "", "Confirm you registration", "Click here to confirm your registration", "http://localhost:8001/api/v1/users/confirm-email", "token", "email", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
 
 	usersController := controllers.NewUsers(
 		usersService,
@@ -38,6 +38,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 
 	apiV1Router := apiRouter.PathPrefix("/v1").Subrouter()
 	apiV1Router.Methods(http.MethodPost).Path("/users").HandlerFunc(usersController.Register)
+	apiV1Router.Methods(http.MethodGet).Path("/users/confirm-email").HandlerFunc(usersController.ConfirmEmail)
 	apiV1Router.Methods(http.MethodPost).Path("/token").HandlerFunc(usersController.Login)
 
 	return router
