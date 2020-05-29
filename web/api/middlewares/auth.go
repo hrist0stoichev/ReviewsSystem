@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/pkg/errors"
+
+	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/log"
 	"github.com/hrist0stoichev/ReviewsSystem/services"
 )
@@ -71,8 +74,24 @@ func (ah *authMiddleware) AuthorizeForRoles(roles ...string) func(http.Handler) 
 }
 
 // UserUIDFromRequest returns the user ID from an incoming request (empty string if not authenticated)
-func UserIDFromRequest(r *http.Request) string {
-	return r.Header.Get(UserIDHeader)
+func UserIDFromRequest(r *http.Request) (*string, error) {
+	userId := r.Header.Get(UserIDHeader)
+	if userId == "" {
+		return nil, errors.New("could not parse user id from headers")
+	}
+
+	return &userId, nil
+}
+
+func UserRoleFromRequest(r *http.Request) (*models.Role, error) {
+	var role *models.Role
+
+	if err := role.Scan([]byte(r.Header.Get(UserRoleHeader))); err != nil {
+		return nil, errors.Wrap(err, "could not parse user role from headers")
+	}
+
+	return role, nil
+
 }
 
 func contains(str string, strs ...string) bool {

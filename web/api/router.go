@@ -45,6 +45,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodGet).Path("/users/confirm-email").HandlerFunc(usersController.ConfirmEmail)
 	apiV1Router.Methods(http.MethodPost).Path("/token").HandlerFunc(usersController.Login)
 	apiV1Router.Methods(http.MethodPost).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
+	apiV1Router.Methods(http.MethodGet).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
 
 	return router
 }

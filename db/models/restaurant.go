@@ -1,6 +1,7 @@
 package models
 
-// TODO: Do i need the RatingsTotal, RatingsCount? They are used for internal purposes.
+// TODO: Do I need the RatingsTotal, RatingsCount? They are used for internal purposes.
+// TODO: Do I need the OwnerPtr
 type Restaurant struct {
 	Id            string
 	OwnerId       string

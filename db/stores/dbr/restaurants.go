@@ -1,6 +1,8 @@
 package dbr
 
 import (
+	"fmt"
+
 	"github.com/gocraft/dbr/v2"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -42,4 +44,26 @@ func (rs *restaurantsStore) Insert(restaurant *models.Restaurant) error {
 		Exec()
 
 	return errors.Wrap(err, "could not insert into restaurants table")
+}
+
+func (rs *restaurantsStore) Get(top, skip int, forOwnerId *string) ([]models.Restaurant, error) {
+	query := rs.session.
+		Select(id, name, city, address, averageRating).
+		From(restaurantsTable).
+		OrderDesc(averageRating).
+		Offset(uint64(skip)).
+		Limit(uint64(top))
+
+	if forOwnerId != nil {
+		query = query.Where(fmt.Sprintf("%s = ?", ownerId), forOwnerId)
+	}
+
+	restaurants := make([]models.Restaurant, 0, top)
+
+	_, err := query.Load(&restaurants)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get restaurants from db")
+	}
+
+	return restaurants, nil
 }

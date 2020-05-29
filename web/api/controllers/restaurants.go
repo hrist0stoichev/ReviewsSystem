@@ -27,6 +27,40 @@ func NewRestaurant(restaurantsService services.RestaurantsService, logger log.Lo
 	}
 }
 
+func (rs *restaurantsController) Get(res http.ResponseWriter, req *http.Request) {
+	top := rs.parseIntParam(req, "top", DefaultTop, MinTop, MaxTop)
+	skip := rs.parseIntParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
+
+	userId, idErr := middlewares.UserIDFromRequest(req)
+	userRole, roleErr := middlewares.UserRoleFromRequest(req)
+
+	if idErr != nil || roleErr != nil {
+		rs.logger.WithError(idErr).WithError(roleErr).Warnln("Cannot get user id or role from the request")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	restaurants, err := rs.restaurantsService.List(top, skip, *userId, *userRole)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("could not list restaurants")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	restaurantsResponse := make([]transfermodels.RestaurantSimpleResponse, len(restaurants))
+	for i, r := range restaurants {
+		restaurantsResponse[i] = transfermodels.RestaurantSimpleResponse{
+			Id:            r.Id,
+			Name:          r.Name,
+			City:          r.City,
+			Address:       r.Address,
+			AverageRating: r.AverageRating,
+		}
+	}
+
+	rs.returnJsonResponse(res, restaurantsResponse)
+}
+
 func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Request) {
 	restaurantRequest := transfermodels.CreateRestaurantRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&restaurantRequest); err != nil {
@@ -39,8 +73,15 @@ func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	userId, err := middlewares.UserIDFromRequest(req)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot get user id from request")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
 	restaurant := models.Restaurant{
-		OwnerId: middlewares.UserIDFromRequest(req),
+		OwnerId: *userId,
 		Name:    restaurantRequest.Name,
 		City:    restaurantRequest.City,
 		Address: restaurantRequest.Address,
