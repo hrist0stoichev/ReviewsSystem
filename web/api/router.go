@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/hrist0stoichev/ReviewsSystem/db"
+	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/log"
 	"github.com/hrist0stoichev/ReviewsSystem/services"
 	"github.com/hrist0stoichev/ReviewsSystem/web/api/controllers"
@@ -20,6 +21,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	tokensService := services.NewTokensService(8*time.Hour, []byte("password"))
 	encryptionService := services.NewEncryptionService(services.DefaultEncryptionCost)
 	emailService := services.NewEmailsService("smtp.gmail.com", "587", "", "", "", "Confirm you registration", "Click here to confirm your registration", "http://localhost:8001/api/v1/users/confirm-email", "token", "email", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
+	restaurantService := services.NewRestaurants(dbManager)
 
 	usersController := controllers.NewUsers(
 		usersService,
@@ -29,7 +31,9 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 		logger.WithField("module", "usersController"),
 		validator)
 
-	_ = middlewares.NewAuth(tokensService)
+	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), validator)
+
+	authMiddleware := middlewares.NewAuth(tokensService)
 
 	router := mux.NewRouter()
 
@@ -40,6 +44,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodPost).Path("/users").HandlerFunc(usersController.Register)
 	apiV1Router.Methods(http.MethodGet).Path("/users/confirm-email").HandlerFunc(usersController.ConfirmEmail)
 	apiV1Router.Methods(http.MethodPost).Path("/token").HandlerFunc(usersController.Login)
+	apiV1Router.Methods(http.MethodPost).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
 
 	return router
 }

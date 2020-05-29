@@ -70,6 +70,11 @@ func (ah *authMiddleware) AuthorizeForRoles(roles ...string) func(http.Handler) 
 	}
 }
 
+// UserUIDFromRequest returns the user ID from an incoming request (empty string if not authenticated)
+func UserIDFromRequest(r *http.Request) string {
+	return r.Header.Get(UserIDHeader)
+}
+
 func contains(str string, strs ...string) bool {
 	for _, s := range strs {
 		if s == str {

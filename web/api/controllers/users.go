@@ -132,10 +132,10 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !user.EmailConfirmed {
-		http.Error(res, EmailNotConfirmed, http.StatusUnauthorized)
-		return
-	}
+	// if !user.EmailConfirmed {
+	// 	http.Error(res, EmailNotConfirmed, http.StatusUnauthorized)
+	// 	return
+	// }
 
 	jwt, claims, err := uc.tokensService.GenerateSignedToken(&services.UserClaims{
 		Id:   user.Id,

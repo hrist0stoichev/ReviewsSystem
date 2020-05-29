@@ -9,3 +9,7 @@ type UsersStore interface {
 	GetByEmail(email string) (*models.User, error)
 	ConfirmEmail(id string) error
 }
+
+type RestaurantsStore interface {
+	Insert(restaurant *models.Restaurant) error
+}

@@ -46,8 +46,9 @@ func main() {
 	}
 
 	usersStore := dbr.NewUsersStore(database.Conn().NewSession(nil))
+	restaurantsStore := dbr.NewRestaurantsStore(database.Conn().NewSession(nil))
 
-	dbManager := db.NewManager(usersStore)
+	dbManager := db.NewManager(usersStore, restaurantsStore)
 
 	apiHandler := api.NewRouter(dbManager, logger, v)
 	apiServer, err := server.New(&cfg.Server, apiHandler, logger)
