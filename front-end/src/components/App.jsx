@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Button from 'react-bootstrap/Button';
 
 export default class App extends Component {
   constructor() {
@@ -6,6 +7,6 @@ export default class App extends Component {
   }
 
   render() {
-    return <div>it works</div>
+    return <Button variant="danger">It works</Button>
   }
 }
