@@ -9,9 +9,19 @@ export const authenticationService = {
   login,
   logout,
   register,
+  authHeader,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue () { return currentUserSubject.value }
 };
+
+function authHeader() {
+  const currentUser = currentUserSubject.value;
+  if (currentUser && currentUser.token) {
+    return { Authorization: `Bearer ${currentUser.token}` };
+  }
+
+  return {};
+}
 
 function login(email, password) {
   const requestOptions = {

@@ -8,6 +8,7 @@ import Alert from "react-bootstrap/Alert";
 import Header from './Header';
 import Login from "./Login";
 import Register from "./Register";
+import RestaurantList from "./RestaurantList";
 
 export default function App() {
   const [alert, setAlert] = useState({
@@ -45,6 +46,7 @@ export default function App() {
             <Switch>
               <Route exact path="/login" render={(props) => <Login showAlert={showAlert} {...props} />} />
               <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
+              <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />
             </Switch>
           </HashRouter>
         </Row>
