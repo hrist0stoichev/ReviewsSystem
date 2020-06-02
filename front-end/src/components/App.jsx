@@ -9,8 +9,10 @@ import Header from './Header';
 import Login from "./Login";
 import Register from "./Register";
 import RestaurantList from "./RestaurantList";
+import AddRestaurant from "./AddRestaurant";
 
 export default function App() {
+  const [addRestaurantModalVisible, setAddRestaurantModalVisible] = useState(false)
   const [alert, setAlert] = useState({
     show: false,
     variant: "",
@@ -33,7 +35,7 @@ export default function App() {
 
   return (
     <div >
-      <Header showAlert={showAlert} />
+      <Header showAlert={showAlert} showAddRestaurantModal={() => setAddRestaurantModalVisible(true)} />
 
       <Container>
         <Alert style={{position:"fixed", right: 30, width: "500px", zIndex: 999 }} show={alert.show} variant={alert.variant} onClose={closeAlert} dismissible>
@@ -48,6 +50,7 @@ export default function App() {
               <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
               <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />
             </Switch>
+            <Route render={(props) => <AddRestaurant show={addRestaurantModalVisible} showAlert={showAlert} handleClose={() => setAddRestaurantModalVisible(false)} {...props} />} />
           </HashRouter>
         </Row>
       </Container>
