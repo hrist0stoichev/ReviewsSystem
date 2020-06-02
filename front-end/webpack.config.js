@@ -26,4 +26,11 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
   },
+  devtool: 'eval-source-map',
+  target: "web",
+  externals: {
+    config: JSON.stringify({
+      apiUrl: 'http://localhost:8001'
+    })
+  }
 };
