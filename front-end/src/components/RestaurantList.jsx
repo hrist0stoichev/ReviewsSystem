@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import {restaurantsService} from "../services/restaurants";
 import CardDeck from "react-bootstrap/CardDeck";
 import Card from "react-bootstrap/Card";
@@ -7,30 +7,57 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
 export default function RestaurantList(props) {
-  const defaultPageSize = 21;
-  const defaultOrderBy = "average_rating"
+  const defaultPageSize = 9;
+  const defaultOrderBy = "average_rating";
 
-  const [restaurants, setRestaurants] = useState([])
-  const [ratingRange, setRatingRange] = useState({min: 1, max: 5})
-  const [page, setPage] = useState(1)
+  const [restaurants, setRestaurants] = useState([]);
+  const [ratingRange, setRatingRange] = useState({min: 1, max: 5});
+
+  const page = useRef(0);
+  const hasMoreResults = useRef(true);
+  const isUpdating = useRef(false);
 
   useEffect(() => {
-    updateRestaurantsList()
+    updateRestaurantsList(false);
+    window.addEventListener('scroll', listenToScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', listenToScroll);
+    };
   }, []);
 
-  const updateRestaurantsList = () => {
-    restaurantsService.get(defaultPageSize, (page - 1) * defaultPageSize, ratingRange.min, ratingRange.max, defaultOrderBy)
+  const listenToScroll = () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
+    if (!isUpdating.current && hasMoreResults.current && winScroll / height > 0.6) {
+      isUpdating.current = true;
+      page.current++;
+      updateRestaurantsList(true);
+    }
+  };
+
+  const updateRestaurantsList = (append) => {
+    restaurantsService.get(defaultPageSize, page.current * defaultPageSize, ratingRange.min, ratingRange.max, defaultOrderBy)
       .then(res => {
-        setRestaurants(res)
+        setRestaurants(restaurants => {
+          return append ? [...restaurants, ...res] : res
+        })
+
+        if (res.length < defaultPageSize) {
+          hasMoreResults.current = false;
+        }
+
+        isUpdating.current = false;
       })
       .catch(err => {
-        props.showAlert(err, false)
-      })
-  }
+        props.showAlert(err, false);
+      });
+  };
 
   const handleCardClick = (event) => {
-    props.history.push("/restaurants/" + event.currentTarget.id)
-  }
+    props.history.push("/restaurants/" + event.currentTarget.id);
+  };
 
   const getDecks = () => {
     const decks = [];
@@ -57,6 +84,13 @@ export default function RestaurantList(props) {
     return decks
   }
 
+  const handleFilterChanged = () => {
+    page.current = 0;
+    hasMoreResults.current = true;
+    isUpdating.current = true;
+    updateRestaurantsList(false)
+  };
+
   return (
     <>
       <Row style={{width: "100%"}}>
@@ -67,7 +101,7 @@ export default function RestaurantList(props) {
             maxValue={5}
             minValue={1}
             value={ratingRange}
-            onChangeComplete={(value) => {updateRestaurantsList}}
+            onChangeComplete={handleFilterChanged}
             onChange={(value) => {setRatingRange(value)}} />
         </Col>
       </Row>
