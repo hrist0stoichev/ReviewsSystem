@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
+import NavDropdown from "react-bootstrap/NavDropdown";
 import {authenticationService} from "../services/auth";
 
 export default function Header(props) {
@@ -24,8 +25,11 @@ export default function Header(props) {
       <Nav className="justify-content-end" activeKey="/home">
         {user === null && <Nav.Link href="#register">Register</Nav.Link>}
         {user === null && <Nav.Link href="#login">Login</Nav.Link>}
-        {user && <Nav.Link>{user.email}</Nav.Link>}
-        {user && <Nav.Link onClick={logOut} href="#login">Logout</Nav.Link>}
+        {user && <NavDropdown title={user.email} id="basic-nav-dropdown">
+          {user.role === "owner" && <NavDropdown.Item>Add restaurant</NavDropdown.Item>}
+          <NavDropdown.Divider />
+          <NavDropdown.Item onClick={logOut} href="#login">Logout</NavDropdown.Item>
+        </NavDropdown> }
       </Nav>
     </Navbar>
   )
