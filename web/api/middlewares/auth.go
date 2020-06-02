@@ -84,7 +84,7 @@ func UserIDFromRequest(r *http.Request) (*string, error) {
 }
 
 func UserRoleFromRequest(r *http.Request) (*models.Role, error) {
-	var role *models.Role
+	role := new(models.Role)
 
 	if err := role.Scan([]byte(r.Header.Get(UserRoleHeader))); err != nil {
 		return nil, errors.Wrap(err, "could not parse user role from headers")
