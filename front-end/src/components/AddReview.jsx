@@ -29,6 +29,7 @@ export default function AddReview(props) {
         })
         .catch((err) => {
           props.showAlert(err, false)
+          props.handleClose();
         })
     } else {
       setValidated(true);
