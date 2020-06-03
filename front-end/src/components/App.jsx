@@ -35,7 +35,7 @@ export default function App() {
   }
 
   return (
-    <div >
+    <div>
       <Header showAlert={showAlert} showAddRestaurantModal={() => setAddRestaurantModalVisible(true)} />
 
       <Container>
