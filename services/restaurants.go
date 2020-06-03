@@ -10,7 +10,13 @@ import (
 type RestaurantsService interface {
 	Create(restaurant *models.Restaurant) error
 	ListByRating(top, skip int, userId string, userRole models.Role, minrRating, maxRating float32) ([]models.Restaurant, error)
+	GetSingle(id string) (*models.Restaurant, error)
+	Exists(id string) (bool, error)
 }
+
+var (
+	ErrRestaurantNotFound = errors.New("restaurant not found")
+)
 
 type restaurantsService struct {
 	db db.Manager
@@ -40,4 +46,26 @@ func (rs *restaurantsService) ListByRating(top, skip int, userId string, userRol
 	}
 
 	return restaurants, nil
+}
+
+func (rs *restaurantsService) GetSingle(id string) (*models.Restaurant, error) {
+	restaurant, err := rs.db.Restaurants().GetSingle(id)
+	if err != nil {
+		if err == db.ErrNotFound {
+			return nil, ErrRestaurantNotFound
+		}
+
+		return nil, errors.Wrap(err, "could not get single restaurant")
+	}
+
+	return restaurant, nil
+}
+
+func (rs *restaurantsService) Exists(id string) (bool, error) {
+	exists, err := rs.db.Restaurants().Exists(id)
+	if err != nil {
+		return false, errors.Wrap(err, "error checking if restaurant exists")
+	}
+
+	return exists, nil
 }

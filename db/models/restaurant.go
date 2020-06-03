@@ -4,6 +4,10 @@ type Restaurant struct {
 	Id            string
 	OwnerId       string
 	Owner         *User
+	MinReviewId   *string
+	MinReview     *Review
+	MaxReviewId   *string
+	MaxReview     *Review
 	Name          string
 	City          string
 	Address       string

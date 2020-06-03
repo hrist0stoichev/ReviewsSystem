@@ -9,6 +9,7 @@ import (
 
 type ReviewsService interface {
 	Create(review *models.Review) error
+	HasUserReviewed(userId, restaurantId string) (bool, error)
 }
 
 type reviewsService struct {
@@ -24,4 +25,9 @@ func NewReviews(db db.Manager) ReviewsService {
 func (rs *reviewsService) Create(review *models.Review) error {
 	err := rs.db.Reviews().Insert(review)
 	return errors.Wrap(err, "could not insert review")
+}
+
+func (rs *reviewsService) HasUserReviewed(userId, restaurantId string) (bool, error) {
+	exists, err := rs.db.Reviews().ExistsForUserAndRestaurant(userId, restaurantId)
+	return exists, errors.Wrap(err, "could not determine whether review exists")
 }

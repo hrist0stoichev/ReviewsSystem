@@ -52,26 +52,54 @@ func (rs *reviewsStore) Insert(review *models.Review) error {
 	}
 
 	_, err = tx.UpdateBySql(`
-		UPDATE restaurants rst 
-		LEFT JOIN reviews rv 
-		ON rst.min_review_id = rv.id 
-		SET rst.min_review_id = ? 
-		WHERE rst.id = ? AND rv.rating >= ?`,
+		UPDATE restaurants rst
+		SET min_review_id = ?
+		FROM reviews rv
+		WHERE rst.id = ? AND (rst.min_review_id is NULL OR (rv.id = rst.min_review_id AND rv.rating >= ?))`,
 		review.Id, review.RestaurantId, review.Rating).Exec()
 	if err != nil {
 		return errors.Wrap(err, "could not update min review")
 	}
 
 	_, err = tx.UpdateBySql(`
-		UPDATE restaurants rst 
-		LEFT JOIN reviews rv 
-		ON rst.max_review_id = rv.id 
-		SET rst.max_review_id = ? 
-		WHERE rst.id = ? AND rv.rating <= ?`,
+		UPDATE restaurants rst
+		SET max_review_id = ?
+		FROM reviews rv
+		WHERE rst.id = ? AND (rst.max_review_id is NULL OR (rv.id = rst.max_review_id AND rv.rating <= ?))`,
 		review.Id, review.RestaurantId, review.Rating).Exec()
 	if err != nil {
 		return errors.Wrap(err, "could not update max review")
 	}
 
+	_, err = tx.UpdateBySql(`
+		UPDATE restaurants
+		SET ratings_total = ratings_total + ?,
+		ratings_count = ratings_count + 1
+		WHERE id = ?`,
+		review.Rating, review.RestaurantId).Exec()
+	if err != nil {
+		return errors.Wrap(err, "could not update rating statistics for restaurants")
+	}
+
 	return errors.Wrap(tx.Commit(), "could not commit transaction")
+}
+
+func (rs *reviewsStore) ExistsForUserAndRestaurant(userId, restaurantId string) (bool, error) {
+	idFoo := ""
+
+	err := rs.session.
+		Select(reviewId).
+		From(reviewsTable).
+		Where("restaurant_id = ? AND reviewer_id = ?", restaurantId, userId).
+		LoadOne(&idFoo)
+
+	if err != nil {
+		if err == dbr.ErrNotFound {
+			return false, nil
+		}
+
+		return false, errors.Wrap(err, "cannot execute query")
+	}
+
+	return true, nil
 }

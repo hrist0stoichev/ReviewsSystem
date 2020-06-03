@@ -33,7 +33,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 		validator)
 
 	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), validator)
-	reviewsController := controllers.NewReviews(reviewsService, logger.WithField("module", "reviewsController"), validator)
+	reviewsController := controllers.NewReviews(reviewsService, restaurantService, logger.WithField("module", "reviewsController"), validator)
 
 	authMiddleware := middlewares.NewAuth(tokensService)
 
@@ -48,6 +48,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/token").HandlerFunc(usersController.Login)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.ListByRating)).ServeHTTP)
+	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants/{id}").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.GetSingle)).ServeHTTP)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/reviews").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String())(http.HandlerFunc(reviewsController.Create)).ServeHTTP)
 
 	return router

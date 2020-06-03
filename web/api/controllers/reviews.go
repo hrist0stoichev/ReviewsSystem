@@ -14,13 +14,15 @@ import (
 )
 
 type reviewsController struct {
-	reviewsService services.ReviewsService
+	reviewsService     services.ReviewsService
+	restaurantsService services.RestaurantsService
 	baseController
 }
 
-func NewReviews(reviewsService services.ReviewsService, logger log.Logger, validator Validator) *reviewsController {
+func NewReviews(reviewsService services.ReviewsService, restaurantsService services.RestaurantsService, logger log.Logger, validator Validator) *reviewsController {
 	return &reviewsController{
-		reviewsService: reviewsService,
+		reviewsService:     reviewsService,
+		restaurantsService: restaurantsService,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -47,7 +49,29 @@ func (rs *reviewsController) Create(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	// TODO: Check if the restaurant exists
+	restaurantExists, err := rs.restaurantsService.Exists(reviewRequest.RestaurantId)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot determine whether restaurant exists")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	if !restaurantExists {
+		http.NotFound(res, req)
+		return
+	}
+
+	userHasRated, err := rs.reviewsService.HasUserReviewed(*userId, reviewRequest.RestaurantId)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot determine whether user has rated")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	if userHasRated {
+		http.Error(res, "You have already rated this restaurant", http.StatusConflict)
+		return
+	}
 
 	review := models.Review{
 		RestaurantId: reviewRequest.RestaurantId,

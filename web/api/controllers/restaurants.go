@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/log"
 	"github.com/hrist0stoichev/ReviewsSystem/services"
@@ -70,6 +72,75 @@ func (rs *restaurantsController) ListByRating(res http.ResponseWriter, req *http
 	rs.returnJsonResponse(res, restaurantsResponse)
 }
 
+func (rs *restaurantsController) GetSingle(res http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+
+	restaurant, err := rs.restaurantsService.GetSingle(id)
+	if err != nil {
+		if err == services.ErrRestaurantNotFound {
+			http.NotFound(res, req)
+			return
+		}
+
+		rs.logger.WithError(err).Warnln("Cannot get restaurant")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	userId, err := middlewares.UserIDFromRequest(req)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot get user id from request")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	userRole, err := middlewares.UserRoleFromRequest(req)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot get user role from request")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	if *userRole == models.Owner && restaurant.OwnerId != *userId {
+		http.NotFound(res, req)
+		return
+	}
+
+	restaurantResponse := transfermodels.RestaurantDetailedResponse{
+		Id:            restaurant.Id,
+		Name:          restaurant.Name,
+		City:          restaurant.City,
+		Address:       restaurant.Address,
+		Img:           restaurant.Img,
+		Description:   restaurant.Description,
+		AverageRating: restaurant.AverageRating,
+	}
+
+	if restaurant.MinReview != nil {
+		restaurantResponse.MinReview = &transfermodels.ReviewSimpleResponse{
+			Id:        restaurant.MinReview.Id,
+			Reviewer:  restaurant.MinReview.Reviewer.Email,
+			Rating:    restaurant.MinReview.Rating,
+			Timestamp: restaurant.MinReview.Timestamp,
+			Comment:   restaurant.MinReview.Comment,
+			Answer:    restaurant.MinReview.Answer,
+		}
+	}
+
+	if restaurant.MaxReview != nil {
+		restaurantResponse.MaxReview = &transfermodels.ReviewSimpleResponse{
+			Id:        restaurant.MaxReview.Id,
+			Reviewer:  restaurant.MaxReview.Reviewer.Email,
+			Rating:    restaurant.MaxReview.Rating,
+			Timestamp: restaurant.MaxReview.Timestamp,
+			Comment:   restaurant.MaxReview.Comment,
+			Answer:    restaurant.MaxReview.Answer,
+		}
+	}
+
+	rs.returnJsonResponse(res, restaurantResponse)
+}
+
 func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Request) {
 	restaurantRequest := transfermodels.CreateRestaurantRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&restaurantRequest); err != nil {
@@ -109,6 +180,8 @@ func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Reque
 		Name:          restaurant.Name,
 		City:          restaurant.City,
 		Address:       restaurant.Address,
+		Img:           restaurant.Img,
+		Description:   restaurant.Description,
 		AverageRating: 0,
 	}
 

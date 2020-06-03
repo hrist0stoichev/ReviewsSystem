@@ -13,8 +13,11 @@ type UsersStore interface {
 type RestaurantsStore interface {
 	Insert(restaurant *models.Restaurant) error
 	GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error)
+	GetSingle(id string) (*models.Restaurant, error)
+	Exists(id string) (bool, error)
 }
 
 type ReviewsStore interface {
 	Insert(review *models.Review) error
+	ExistsForUserAndRestaurant(userId, restaurantId string) (bool, error)
 }
