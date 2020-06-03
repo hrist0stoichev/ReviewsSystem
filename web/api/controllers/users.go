@@ -132,6 +132,7 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// TODO: Uncomment this line
 	// if !user.EmailConfirmed {
 	// 	http.Error(res, EmailNotConfirmed, http.StatusUnauthorized)
 	// 	return

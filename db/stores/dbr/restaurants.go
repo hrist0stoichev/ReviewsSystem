@@ -23,6 +23,8 @@ const (
 	ratingsTotal     = "ratings_total"
 	ratingsCount     = "ratings_count"
 	averageRating    = "average_rating"
+	minReviewId      = "min_review_id"
+	maxReviewId      = "max_review_id"
 )
 
 type restaurantsStore struct {
@@ -39,9 +41,10 @@ func (rs *restaurantsStore) Insert(restaurant *models.Restaurant) error {
 	if restaurant.Id == "" {
 		restaurant.Id = uuid.NewV4().String()
 	}
+
 	_, err := rs.session.
 		InsertInto(restaurantsTable).
-		Columns(id, ownerId, name, city, address, img, description, ratingsTotal, ratingsCount).
+		Columns(id, ownerId, name, city, address, img, description, ratingsTotal, ratingsCount, minReviewId, maxReviewId).
 		Record(restaurant).
 		Exec()
 

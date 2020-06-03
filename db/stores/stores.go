@@ -14,3 +14,7 @@ type RestaurantsStore interface {
 	Insert(restaurant *models.Restaurant) error
 	GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error)
 }
+
+type ReviewsStore interface {
+	Insert(review *models.Review) error
+}

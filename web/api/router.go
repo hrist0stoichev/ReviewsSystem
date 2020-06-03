@@ -22,6 +22,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	encryptionService := services.NewEncryptionService(services.DefaultEncryptionCost)
 	emailService := services.NewEmailsService("smtp.gmail.com", "587", "", "", "", "Confirm you registration", "Click here to confirm your registration", "http://localhost:8001/api/v1/users/confirm-email", "token", "email", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
 	restaurantService := services.NewRestaurants(dbManager)
+	reviewsService := services.NewReviews(dbManager)
 
 	usersController := controllers.NewUsers(
 		usersService,
@@ -32,6 +33,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 		validator)
 
 	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), validator)
+	reviewsController := controllers.NewReviews(reviewsService, logger.WithField("module", "reviewsController"), validator)
 
 	authMiddleware := middlewares.NewAuth(tokensService)
 
@@ -45,7 +47,8 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/users/confirm-email").HandlerFunc(usersController.ConfirmEmail)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/token").HandlerFunc(usersController.Login)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
-	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.Get)).ServeHTTP)
+	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.ListByRating)).ServeHTTP)
+	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/reviews").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String())(http.HandlerFunc(reviewsController.Create)).ServeHTTP)
 
 	return router
 }
