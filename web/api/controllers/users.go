@@ -118,7 +118,7 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	user, err := uc.usersService.GetByEmail(loginRequest.Email)
 	if err != nil {
 		if err == services.ErrUserNotFound {
-			http.Error(res, InvalidCredentials, http.StatusUnauthorized)
+			http.Error(res, InvalidCredentials, http.StatusNotFound)
 			return
 		}
 
@@ -128,13 +128,13 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if !uc.encryptionService.PasswordsMatch(&loginRequest.Password, &user.HashedPassword) {
-		http.Error(res, InvalidCredentials, http.StatusUnauthorized)
+		http.Error(res, InvalidCredentials, http.StatusNotFound)
 		return
 	}
 
 	// TODO: Uncomment this line
 	// if !user.EmailConfirmed {
-	// 	http.Error(res, EmailNotConfirmed, http.StatusUnauthorized)
+	// 	http.Error(res, EmailNotConfirmed, http.StatusBadRequest)
 	// 	return
 	// }
 

@@ -33,8 +33,8 @@ func (rs *restaurantsController) ListByRating(res http.ResponseWriter, req *http
 	top := rs.parseFloatParam(req, "top", DefaultTop, MinTop, MaxTop)
 	skip := rs.parseFloatParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
 
-	minRating := rs.parseFloatParam(req, "min_rating", 0, MinRating, MaxRating)
-	maxRating := rs.parseFloatParam(req, "max_rating", 5, MinRating, MaxRating)
+	minRating := rs.parseFloatParam(req, "minRating", 0, MinRating, MaxRating)
+	maxRating := rs.parseFloatParam(req, "maxRating", 5, MinRating, MaxRating)
 
 	if minRating > maxRating {
 		minRating = maxRating

@@ -33,14 +33,14 @@ func (rs *restaurantsService) Create(restaurant *models.Restaurant) error {
 	return errors.Wrap(err, "could not insert restaurant")
 }
 
-func (rs *restaurantsService) ListByRating(top, skip int, userId string, userRole models.Role, minrRating, maxRating float32) ([]models.Restaurant, error) {
+func (rs *restaurantsService) ListByRating(top, skip int, userId string, userRole models.Role, minRating, maxRating float32) ([]models.Restaurant, error) {
 	var ownerId *string = nil
 
 	if userRole == models.Owner {
 		ownerId = &userId
 	}
 
-	restaurants, err := rs.db.Restaurants().GetByRating(top, skip, ownerId, minrRating, maxRating)
+	restaurants, err := rs.db.Restaurants().GetByRating(top, skip, ownerId, minRating, maxRating)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get restaurants")
 	}
