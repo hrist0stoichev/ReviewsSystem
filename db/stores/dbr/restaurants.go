@@ -18,6 +18,8 @@ const (
 	name             = "name"
 	city             = "city"
 	address          = "address"
+	img              = "img"
+	description      = "description"
 	ratingsTotal     = "ratings_total"
 	ratingsCount     = "ratings_count"
 	averageRating    = "average_rating"
@@ -39,17 +41,18 @@ func (rs *restaurantsStore) Insert(restaurant *models.Restaurant) error {
 	}
 	_, err := rs.session.
 		InsertInto(restaurantsTable).
-		Columns(id, ownerId, name, city, address, ratingsTotal, ratingsCount).
+		Columns(id, ownerId, name, city, address, img, description, ratingsTotal, ratingsCount).
 		Record(restaurant).
 		Exec()
 
 	return errors.Wrap(err, "could not insert into restaurants table")
 }
 
-func (rs *restaurantsStore) Get(top, skip int, forOwnerId *string) ([]models.Restaurant, error) {
+func (rs *restaurantsStore) GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error) {
 	query := rs.session.
-		Select(id, name, city, address, averageRating).
+		Select(id, name, city, address, img, description, averageRating).
 		From(restaurantsTable).
+		Where(fmt.Sprintf("%s >= ? AND %s <= ?", averageRating, averageRating), minRating, maxRating).
 		OrderDesc(averageRating).
 		Offset(uint64(skip)).
 		Limit(uint64(top))

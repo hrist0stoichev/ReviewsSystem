@@ -1,9 +1,11 @@
 package transfermodels
 
 type CreateRestaurantRequest struct {
-	Name    string `json:"name" validate:"required,min=5,max=60"`
-	City    string `json:"city" validate:"required,min=5,max=30"`
-	Address string `json:"address" validate:"required,min=5,max=100"`
+	Name        string `json:"name" validate:"required,min=5,max=60"`
+	City        string `json:"city" validate:"required,min=5,max=30"`
+	Address     string `json:"address" validate:"required,min=5,max=100"`
+	Img         string `json:"img" validate:"url"`
+	Description string `json:"description" validate:"required,min=50,max=500"`
 }
 
 type RestaurantSimpleResponse struct {
@@ -11,5 +13,7 @@ type RestaurantSimpleResponse struct {
 	Name          string  `json:"name"`
 	City          string  `json:"city"`
 	Address       string  `json:"address"`
+	Img           string  `json:"img"`
+	Description   string  `json:"description"`
 	AverageRating float32 `json:"average_rating"`
 }

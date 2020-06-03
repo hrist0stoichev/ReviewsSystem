@@ -18,6 +18,8 @@ const (
 	DefaultSkip         = 0
 	MinSkip             = 0
 	MaxSkip             = math.MaxInt32
+	MinRating           = 0
+	MaxRating           = 5
 )
 
 // TODO: Add validator to the configs. Maybe this interface needs to be moved.
@@ -37,21 +39,21 @@ func (bc *baseController) returnJsonResponse(w http.ResponseWriter, res interfac
 	}
 }
 
-// parseIntParam parses an int parameter from the URI putting it inside the boundary [min, max].
-// If the param cannot be parsed to int, a default value is used.
-func (bc *baseController) parseIntParam(req *http.Request, param string, def, min, max int) int {
-	intParam, err := strconv.Atoi(req.URL.Query().Get(param))
+// parseIntParam parses a float parameter from the URI putting it inside the boundary [min, max].
+// If the param cannot be parsed to float, a default value is returned.
+func (bc *baseController) parseFloatParam(req *http.Request, param string, def, min, max float64) float64 {
+	floatParam, err := strconv.ParseFloat(req.URL.Query().Get(param), 64)
 	if err != nil {
-		intParam = def
+		return def
 	}
 
-	if intParam > max {
-		intParam = max
+	if floatParam > max {
+		return max
 	}
 
-	if intParam < min {
-		intParam = min
+	if floatParam < min {
+		return min
 	}
 
-	return intParam
+	return floatParam
 }

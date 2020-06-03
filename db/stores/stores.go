@@ -12,5 +12,5 @@ type UsersStore interface {
 
 type RestaurantsStore interface {
 	Insert(restaurant *models.Restaurant) error
-	Get(top, skip int, forOwnerId *string) ([]models.Restaurant, error)
+	GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error)
 }

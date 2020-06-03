@@ -27,9 +27,16 @@ func NewRestaurant(restaurantsService services.RestaurantsService, logger log.Lo
 	}
 }
 
-func (rs *restaurantsController) Get(res http.ResponseWriter, req *http.Request) {
-	top := rs.parseIntParam(req, "top", DefaultTop, MinTop, MaxTop)
-	skip := rs.parseIntParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
+func (rs *restaurantsController) ListByRating(res http.ResponseWriter, req *http.Request) {
+	top := rs.parseFloatParam(req, "top", DefaultTop, MinTop, MaxTop)
+	skip := rs.parseFloatParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
+
+	minRating := rs.parseFloatParam(req, "min_rating", 0, MinRating, MaxRating)
+	maxRating := rs.parseFloatParam(req, "max_rating", 5, MinRating, MaxRating)
+
+	if minRating > maxRating {
+		minRating = maxRating
+	}
 
 	userId, idErr := middlewares.UserIDFromRequest(req)
 	userRole, roleErr := middlewares.UserRoleFromRequest(req)
@@ -40,7 +47,7 @@ func (rs *restaurantsController) Get(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	restaurants, err := rs.restaurantsService.List(top, skip, *userId, *userRole)
+	restaurants, err := rs.restaurantsService.ListByRating(int(top), int(skip), *userId, *userRole, float32(minRating), float32(maxRating))
 	if err != nil {
 		rs.logger.WithError(err).Warnln("could not list restaurants")
 		http.Error(res, InternalServerError, http.StatusInternalServerError)
@@ -54,6 +61,8 @@ func (rs *restaurantsController) Get(res http.ResponseWriter, req *http.Request)
 			Name:          r.Name,
 			City:          r.City,
 			Address:       r.Address,
+			Img:           r.Img,
+			Description:   r.Description,
 			AverageRating: r.AverageRating,
 		}
 	}
@@ -81,10 +90,12 @@ func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Reque
 	}
 
 	restaurant := models.Restaurant{
-		OwnerId: *userId,
-		Name:    restaurantRequest.Name,
-		City:    restaurantRequest.City,
-		Address: restaurantRequest.Address,
+		OwnerId:     *userId,
+		Name:        restaurantRequest.Name,
+		City:        restaurantRequest.City,
+		Address:     restaurantRequest.Address,
+		Img:         restaurantRequest.Img,
+		Description: restaurantRequest.Description,
 	}
 
 	if err := rs.restaurantsService.Create(&restaurant); err != nil {
