@@ -9,7 +9,7 @@ type Review struct {
 	RestaurantId string
 	Restaurant   *Restaurant
 	ReviewerId   string
-	Reviewer     *User
+	Reviewer     User
 	Rating       uint8
 	Timestamp    time.Time
 	Comment      string

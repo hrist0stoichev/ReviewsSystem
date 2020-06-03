@@ -30,6 +30,45 @@ func NewReviews(reviewsService services.ReviewsService, restaurantsService servi
 	}
 }
 
+func (rs *reviewsController) GetForRestaurant(res http.ResponseWriter, req *http.Request) {
+	restaurantId := req.URL.Query().Get("restaurantId")
+	if restaurantId == "" {
+		http.Error(res, "You need to specify restaurant id", http.StatusBadRequest)
+		return
+	}
+
+	orderBy := req.URL.Query().Get("orderBy")
+	if orderBy == "" {
+		orderBy = "timestamp"
+	}
+
+	top := rs.parseFloatParam(req, "top", DefaultTop, MinTop, MaxTop)
+	skip := rs.parseFloatParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
+	unanswered := req.URL.Query().Get("unanswered") == "true"
+	asc := req.URL.Query().Get("orderByAsc") == "true"
+
+	reviews, err := rs.reviewsService.ListForRestaurant(restaurantId, unanswered, uint64(top), uint64(skip), orderBy, asc)
+	if err != nil {
+		rs.logger.WithError(err).Warnln("Cannot get reviews")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	responseReviews := make([]transfermodels.ReviewSimpleResponse, len(reviews))
+	for i, r := range reviews {
+		responseReviews[i] = transfermodels.ReviewSimpleResponse{
+			Id:        r.Id,
+			Reviewer:  r.Reviewer.Email,
+			Rating:    r.Rating,
+			Timestamp: r.Timestamp,
+			Comment:   r.Comment,
+			Answer:    r.Answer,
+		}
+	}
+
+	rs.returnJsonResponse(res, responseReviews)
+}
+
 func (rs *reviewsController) Create(res http.ResponseWriter, req *http.Request) {
 	reviewRequest := transfermodels.CreateReviewRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&reviewRequest); err != nil {

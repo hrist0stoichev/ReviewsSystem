@@ -10,6 +10,7 @@ import (
 type ReviewsService interface {
 	Create(review *models.Review) error
 	HasUserReviewed(userId, restaurantId string) (bool, error)
+	ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error)
 }
 
 type reviewsService struct {
@@ -30,4 +31,13 @@ func (rs *reviewsService) Create(review *models.Review) error {
 func (rs *reviewsService) HasUserReviewed(userId, restaurantId string) (bool, error) {
 	exists, err := rs.db.Reviews().ExistsForUserAndRestaurant(userId, restaurantId)
 	return exists, errors.Wrap(err, "could not determine whether review exists")
+}
+
+func (rs *reviewsService) ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error) {
+	reviews, err := rs.db.Reviews().ListForRestaurant(restaurantId, unanswered, top, skip, orderBy, isAsc)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot get reviews for restaurant")
+	}
+
+	return reviews, nil
 }

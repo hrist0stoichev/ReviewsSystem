@@ -103,3 +103,28 @@ func (rs *reviewsStore) ExistsForUserAndRestaurant(userId, restaurantId string) 
 
 	return true, nil
 }
+
+func (rs *reviewsStore) ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error) {
+	reviews := make([]models.Review, 0, top)
+
+	query := rs.session.
+		Select("*").
+		From(reviewsTable).
+		Join(usersTable, "reviews.reviewer_id = users.id").
+		Where("restaurant_id = ?", restaurantId).
+		OrderDir(orderBy, isAsc).
+		Limit(top).
+		Offset(skip)
+
+	if unanswered {
+		query = query.
+			Where("answer is NULL")
+	}
+
+	_, err := query.Load(&reviews)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not load reviews")
+	}
+
+	return reviews, nil
+}
