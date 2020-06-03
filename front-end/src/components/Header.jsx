@@ -18,7 +18,7 @@ export default function Header(props) {
 
   return (
     <Navbar bg="dark" variant="dark" style={{ marginBottom: "2em"}}>
-      <Navbar.Brand href="#home">ReviewsSystem</Navbar.Brand>
+      <Navbar.Brand>ReviewsSystem</Navbar.Brand>
       <Nav className="mr-auto">
         {user && <Nav.Link href="#restaurants">Restaurants</Nav.Link>}
       </Nav>

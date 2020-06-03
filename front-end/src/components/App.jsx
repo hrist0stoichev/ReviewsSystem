@@ -46,10 +46,12 @@ export default function App() {
 
         <HashRouter>
           <Switch>
+            <Route exact path="/" render={(props) => {props.history.push("login")}} />
             <Route exact path="/login" render={(props) => <Login showAlert={showAlert} {...props} />} />
             <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
             <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />
             <Route exact path="/restaurants/:id" render={(props) => <Restaurant showAlert={showAlert} {...props} />} />
+            <Route render={() => <h1 style={{textAlign: "center"}}>Page Not Found!</h1>} />
           </Switch>
           <Route render={(props) => <AddRestaurant show={addRestaurantModalVisible} showAlert={showAlert} handleClose={() => setAddRestaurantModalVisible(false)} {...props} />} />
         </HashRouter>
