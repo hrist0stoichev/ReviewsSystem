@@ -7,10 +7,14 @@ import Badge from "react-bootstrap/Badge";
 import Review from "./Review";
 import Carousel from "react-bootstrap/Carousel";
 import {reviewsService} from "../services/reviews";
+import Button from "react-bootstrap/Button";
+import {authenticationService} from "../services/auth";
+import AddReview from "./AddReview";
 
 export default function Restaurant(props) {
   const [restaurant, setRestaurant] = useState({});
   const [reviews, setReviews] = useState([]);
+  const [addReviewVisible, setAddReviewVisible] = useState(false);
 
   useEffect(() => {
     restaurantsService.getSingle(props.match.params.id)
@@ -24,6 +28,7 @@ export default function Restaurant(props) {
 
   return (
     <>
+      <AddReview restaurant_id={props.match.params.id} showAlert={props.showAlert} show={addReviewVisible} handleClose={() => {setAddReviewVisible(false)}}/>
       <Row>
         <Col lg={6}>
           <Row>
@@ -39,6 +44,11 @@ export default function Restaurant(props) {
           <p>{restaurant.description}</p>
         </Col>
         <Col lg={6}>
+          {authenticationService.currentUserValue.role !== "owner" &&<Row>
+            <Col lg={{ offset: 8, span: 4}}>
+              <div style={{padding: "10px", right: 0}}><Button onClick={() => {setAddReviewVisible(true)}} variant="primary">Leave a review</Button></div>
+            </Col>
+          </Row>}
           <Image src={restaurant.img} fluid rounded />
         </Col>
       </Row>
