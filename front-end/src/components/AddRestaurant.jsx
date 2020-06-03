@@ -39,7 +39,7 @@ export default function AddRestaurant(props) {
 
   const handleDescriptionValidation = (event) => {
     const description = event.currentTarget.description.value;
-    event.currentTarget.description.setCustomValidity(description.length < 50 || description.length > 300 ? "Invalid description" : "")
+    event.currentTarget.description.setCustomValidity(description.length < 30 || description.length > 500 ? "Invalid description" : "")
   }
 
   return (
@@ -56,32 +56,32 @@ export default function AddRestaurant(props) {
         <Form noValidate validated={validated} onInput={handleDescriptionValidation} onSubmit={handleSubmit}>
           <Form.Group controlId="formName">
             <Form.Label>Name</Form.Label>
-            <Form.Control type="text" placeholder="Name" name="name" required pattern="^\w{5,60}$" />
+            <Form.Control type="text" placeholder="Name" name="name" required pattern="^[\w\s']{5,60}$" />
             <Form.Control.Feedback type="invalid">Please provide a valid name (5-60 characters)!</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="formCity">
             <Form.Label>City</Form.Label>
-            <Form.Control type="text" placeholder="City" name="city" required pattern="^\w{5,30}$" />
+            <Form.Control type="text" placeholder="City" name="city" required pattern="^[\w\s]{5,30}$" />
             <Form.Control.Feedback type="invalid">Please provide a valid city (5-30 characters)!</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="formAddress">
             <Form.Label>Address</Form.Label>
-            <Form.Control type="text" placeholder="Address" name="address" required pattern="^\w{5,100}$" />
+            <Form.Control type="text" placeholder="Address" name="address" required pattern="^[\w\s]{5,100}$" />
             <Form.Control.Feedback type="invalid">Please provide a valid address (5-100 characters)!</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="formImg">
             <Form.Label>Image</Form.Label>
-            <Form.Control type="url" placeholder="Image URL" name="img" />
+            <Form.Control type="url" placeholder="Image URL" name="img" required />
             <Form.Control.Feedback type="invalid">Please provide a valid URL!</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="formDescription">
             <Form.Label>Description</Form.Label>
             <Form.Control as="textarea" placeholder="Description" name="description" required />
-            <Form.Control.Feedback type="invalid">Please provide a valid description (50-300 characters)!</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">Please provide a valid description (30-500 characters)!</Form.Control.Feedback>
           </Form.Group>
 
           <Modal.Footer>

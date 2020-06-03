@@ -8,6 +8,7 @@ import Alert from "react-bootstrap/Alert";
 import Header from './Header';
 import Login from "./Login";
 import Register from "./Register";
+import Restaurant from "./Restaurant";
 import RestaurantList from "./RestaurantList";
 import AddRestaurant from "./AddRestaurant";
 
@@ -43,16 +44,15 @@ export default function App() {
           <p>{alert.msg}</p>
         </Alert>
 
-        <Row>
-          <HashRouter>
-            <Switch>
-              <Route exact path="/login" render={(props) => <Login showAlert={showAlert} {...props} />} />
-              <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
-              <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />
-            </Switch>
-            <Route render={(props) => <AddRestaurant show={addRestaurantModalVisible} showAlert={showAlert} handleClose={() => setAddRestaurantModalVisible(false)} {...props} />} />
-          </HashRouter>
-        </Row>
+        <HashRouter>
+          <Switch>
+            <Route exact path="/login" render={(props) => <Login showAlert={showAlert} {...props} />} />
+            <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
+            <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />
+            <Route exact path="/restaurants/:id" render={(props) => <Restaurant showAlert={showAlert} {...props} />} />
+          </Switch>
+          <Route render={(props) => <AddRestaurant show={addRestaurantModalVisible} showAlert={showAlert} handleClose={() => setAddRestaurantModalVisible(false)} {...props} />} />
+        </HashRouter>
       </Container>
     </div>
   );

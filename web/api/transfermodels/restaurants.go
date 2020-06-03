@@ -5,7 +5,7 @@ type CreateRestaurantRequest struct {
 	City        string `json:"city" validate:"required,min=5,max=30"`
 	Address     string `json:"address" validate:"required,min=5,max=100"`
 	Img         string `json:"img" validate:"required,url"`
-	Description string `json:"description" validate:"required,min=50,max=500"`
+	Description string `json:"description" validate:"required,min=30,max=500"`
 }
 
 type RestaurantSimpleResponse struct {

@@ -4,6 +4,7 @@ import {handleResponse} from "./common";
 
 export const restaurantsService = {
   get,
+  getSingle,
   add
 }
 
@@ -28,5 +29,15 @@ function get(top, skip, minRating, maxRating, orderBy) {
   }
 
   return fetch(`${config.apiUrl}/api/v1/restaurants?top=${top}&skip=${skip}&minRating=${minRating}&maxRating=${maxRating}&orderBy=${orderBy}`, requestOptions)
+    .then(handleResponse)
+}
+
+function getSingle(id) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authenticationService.authHeader()
+  }
+
+  return fetch(`${config.apiUrl}/api/v1/restaurants/${id}`, requestOptions)
     .then(handleResponse)
 }

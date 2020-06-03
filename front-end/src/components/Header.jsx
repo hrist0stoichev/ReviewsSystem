@@ -27,7 +27,7 @@ export default function Header(props) {
         {user === null && <Nav.Link href="#login">Login</Nav.Link>}
         {user && <NavDropdown title={user.email} id="basic-nav-dropdown">
           {user.role === "owner" && <NavDropdown.Item onClick={props.showAddRestaurantModal}>Add restaurant</NavDropdown.Item>}
-          <NavDropdown.Divider />
+          {user.role === "owner" && <NavDropdown.Divider />}
           <NavDropdown.Item onClick={logOut} href="#login">Logout</NavDropdown.Item>
         </NavDropdown> }
       </Nav>

@@ -126,9 +126,9 @@ func (rs *restaurantsStore) GetSingle(resId string) (*models.Restaurant, error) 
 			SELECT res.id, res.owner_id, res.name, res.city, res.address, res.img, res.description, res.average_rating, min_rv.id, min_rv.rating, min_rv.timestamp, min_rv.comment, min_rv.answer, min_usr.email, max_rv.id, max_rv.rating, max_rv.timestamp, max_rv.comment, max_rv.answer, max_usr.email
 			FROM restaurants res
 			LEFT JOIN reviews min_rv ON res.min_review_id = min_rv.id
-			INNER JOIN users min_usr ON min_rv.reviewer_id = min_usr.id
+			LEFT JOIN users min_usr ON min_rv.reviewer_id = min_usr.id
 			LEFT JOIN reviews max_rv ON res.max_review_id = max_rv.id
-			INNER JOIN users max_usr ON max_rv.reviewer_id = max_usr.id 
+			LEFT JOIN users max_usr ON max_rv.reviewer_id = max_usr.id 
 			WHERE res.id = $1`, resId).
 		Scan(&r.Id, &r.OwnerId, &r.Name, &r.City, &r.Address, &r.Img, &r.Description, &r.AverageRating, &r.MinReviewId, &r.MinReviewRating, &r.MinReviewTimestamp, &r.MinReviewComment, &r.MinReviewAnswer, &r.MinReviewReviewer, &r.MaxReviewId, &r.MaxReviewRating, &r.MaxReviewTimestamp, &r.MaxReviewComment, &r.MaxReviewAnswer, &r.MaxReviewReviewer)
 
