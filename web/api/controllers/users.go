@@ -16,7 +16,7 @@ const (
 	EmailNotConfirmed  = "Email is not confirmed"
 )
 
-type usersController struct {
+type Users struct {
 	usersService      services.UsersService
 	encryptionService services.EncryptionService
 	tokensService     services.TokensService
@@ -33,8 +33,8 @@ func NewUsers(
 	oauth2Service services.OAuth2Service,
 	logger log.Logger,
 	validator Validator,
-) *usersController {
-	return &usersController{
+) *Users {
+	return &Users{
 		usersService:      usersService,
 		encryptionService: encryptionService,
 		tokensService:     tokensService,
@@ -47,7 +47,7 @@ func NewUsers(
 	}
 }
 
-func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) {
+func (uc *Users) Register(res http.ResponseWriter, req *http.Request) {
 	userRequest := transfermodels.CreateUserRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&userRequest); err != nil {
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
@@ -111,7 +111,7 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 	})
 }
 
-func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
+func (uc *Users) Login(res http.ResponseWriter, req *http.Request) {
 	loginRequest := transfermodels.LoginRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&loginRequest); err != nil {
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
@@ -161,12 +161,12 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	uc.returnJsonResponse(res, resp)
 }
 
-func (uc *usersController) RedirectToFacebookAuth(res http.ResponseWriter, req *http.Request) {
+func (uc *Users) RedirectToFacebookAuth(res http.ResponseWriter, req *http.Request) {
 	redirectionURL := uc.oauth2Service.GenerateAuthURL()
 	http.Redirect(res, req, redirectionURL, http.StatusTemporaryRedirect)
 }
 
-func (uc *usersController) FacebookLogin(res http.ResponseWriter, req *http.Request) {
+func (uc *Users) FacebookLogin(res http.ResponseWriter, req *http.Request) {
 	fbLoginRequest := struct {
 		State string `json:"state"`
 		Code  string `json:"code"`
@@ -244,7 +244,7 @@ func (uc *usersController) FacebookLogin(res http.ResponseWriter, req *http.Requ
 	uc.returnJsonResponse(res, resp)
 }
 
-func (uc *usersController) ConfirmEmail(res http.ResponseWriter, req *http.Request) {
+func (uc *Users) ConfirmEmail(res http.ResponseWriter, req *http.Request) {
 	email := req.URL.Query().Get("email")
 	token := req.URL.Query().Get("token")
 

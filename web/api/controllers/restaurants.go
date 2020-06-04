@@ -14,13 +14,13 @@ import (
 	"github.com/hrist0stoichev/ReviewsSystem/web/api/transfermodels"
 )
 
-type restaurantsController struct {
+type Restaurants struct {
 	restaurantsService services.RestaurantsService
 	baseController
 }
 
-func NewRestaurant(restaurantsService services.RestaurantsService, logger log.Logger, validator Validator) *restaurantsController {
-	return &restaurantsController{
+func NewRestaurant(restaurantsService services.RestaurantsService, logger log.Logger, validator Validator) *Restaurants {
+	return &Restaurants{
 		restaurantsService: restaurantsService,
 		baseController: baseController{
 			logger:    logger,
@@ -29,7 +29,7 @@ func NewRestaurant(restaurantsService services.RestaurantsService, logger log.Lo
 	}
 }
 
-func (rs *restaurantsController) ListByRating(res http.ResponseWriter, req *http.Request) {
+func (rs *Restaurants) ListByRating(res http.ResponseWriter, req *http.Request) {
 	top := rs.parseFloatParam(req, "top", DefaultTop, MinTop, MaxTop)
 	skip := rs.parseFloatParam(req, "skip", DefaultSkip, MinSkip, MaxSkip)
 
@@ -72,7 +72,7 @@ func (rs *restaurantsController) ListByRating(res http.ResponseWriter, req *http
 	rs.returnJsonResponse(res, restaurantsResponse)
 }
 
-func (rs *restaurantsController) GetSingle(res http.ResponseWriter, req *http.Request) {
+func (rs *Restaurants) GetSingle(res http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 
 	restaurant, err := rs.restaurantsService.GetSingle(id)
@@ -141,7 +141,7 @@ func (rs *restaurantsController) GetSingle(res http.ResponseWriter, req *http.Re
 	rs.returnJsonResponse(res, restaurantResponse)
 }
 
-func (rs *restaurantsController) Create(res http.ResponseWriter, req *http.Request) {
+func (rs *Restaurants) Create(res http.ResponseWriter, req *http.Request) {
 	restaurantRequest := transfermodels.CreateRestaurantRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&restaurantRequest); err != nil {
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)

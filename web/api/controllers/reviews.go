@@ -15,14 +15,14 @@ import (
 	"github.com/hrist0stoichev/ReviewsSystem/web/api/transfermodels"
 )
 
-type reviewsController struct {
+type Reviews struct {
 	reviewsService     services.ReviewsService
 	restaurantsService services.RestaurantsService
 	baseController
 }
 
-func NewReviews(reviewsService services.ReviewsService, restaurantsService services.RestaurantsService, logger log.Logger, validator Validator) *reviewsController {
-	return &reviewsController{
+func NewReviews(reviewsService services.ReviewsService, restaurantsService services.RestaurantsService, logger log.Logger, validator Validator) *Reviews {
+	return &Reviews{
 		reviewsService:     reviewsService,
 		restaurantsService: restaurantsService,
 		baseController: baseController{
@@ -32,7 +32,7 @@ func NewReviews(reviewsService services.ReviewsService, restaurantsService servi
 	}
 }
 
-func (rs *reviewsController) ListForRestaurant(res http.ResponseWriter, req *http.Request) {
+func (rs *Reviews) ListForRestaurant(res http.ResponseWriter, req *http.Request) {
 	restaurantId := req.URL.Query().Get("restaurantId")
 	if restaurantId == "" {
 		http.Error(res, "You need to specify restaurant id", http.StatusBadRequest)
@@ -71,7 +71,7 @@ func (rs *reviewsController) ListForRestaurant(res http.ResponseWriter, req *htt
 	rs.returnJsonResponse(res, responseReviews)
 }
 
-func (rs *reviewsController) Create(res http.ResponseWriter, req *http.Request) {
+func (rs *Reviews) Create(res http.ResponseWriter, req *http.Request) {
 	reviewRequest := transfermodels.CreateReviewRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&reviewRequest); err != nil {
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
@@ -141,7 +141,7 @@ func (rs *reviewsController) Create(res http.ResponseWriter, req *http.Request) 
 	rs.returnJsonResponse(res, reviewResponse)
 }
 
-func (rs *reviewsController) Answer(res http.ResponseWriter, req *http.Request) {
+func (rs *Reviews) Answer(res http.ResponseWriter, req *http.Request) {
 	answerRequest := transfermodels.AnswerReviewRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&answerRequest); err != nil {
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)

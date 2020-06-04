@@ -3,13 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
 
 	"github.com/hrist0stoichev/ReviewsSystem/db"
 	"github.com/hrist0stoichev/ReviewsSystem/db/stores/dbr"
@@ -17,7 +21,9 @@ import (
 	"github.com/hrist0stoichev/ReviewsSystem/lib/dbrdb"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/log"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/server"
+	"github.com/hrist0stoichev/ReviewsSystem/services"
 	"github.com/hrist0stoichev/ReviewsSystem/web/api"
+	"github.com/hrist0stoichev/ReviewsSystem/web/api/controllers"
 )
 
 func main() {
@@ -51,7 +57,26 @@ func main() {
 
 	dbManager := db.NewManager(usersStore, restaurantsStore, reviewsStore)
 
-	apiHandler := api.NewRouter(dbManager, logger, v)
+	usersService := services.NewUserService(dbManager)
+	tokensService := services.NewTokensService(8*time.Hour, []byte("password"))
+	encryptionService := services.NewEncryptionService(services.DefaultEncryptionCost)
+	emailService := services.NewEmailsService("smtp.gmail.com", "587", "", "", "", "Confirm you registration", "Click here to confirm your registration", "http://localhost:8001/api/v1/users/confirm-email", "token", "email", 30, rand.New(rand.NewSource(time.Now().UnixNano())))
+	restaurantService := services.NewRestaurants(dbManager)
+	reviewsService := services.NewReviews(dbManager)
+	oauth2Service := services.NewOauth2(oauth2.Config{
+		ClientID:     "",
+		ClientSecret: "",
+		RedirectURL:  "http://localhost:9000/#",
+		Scopes:       []string{"email"},
+		Endpoint:     facebook.Endpoint,
+	}, "https://graph.facebook.com/me", logger)
+
+	usersController := controllers.NewUsers(usersService, encryptionService, tokensService, emailService, oauth2Service, logger.WithField("module", "usersController"), v)
+	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), v)
+	reviewsController := controllers.NewReviews(reviewsService, restaurantService, logger.WithField("module", "reviewsController"), v)
+
+	apiHandler := api.NewRouter(tokensService, usersController, restaurantsController, reviewsController, logger)
+
 	apiServer, err := server.New(&cfg.Server, apiHandler, logger)
 	if err != nil {
 		logger.WithError(err).Fatalln("could not create server")
