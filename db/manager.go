@@ -10,6 +10,7 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
+// Manager is a Unit of Work that can be used to access all tables of the underlying database.
 type Manager interface {
 	Users() stores.UsersStore
 	Restaurants() stores.RestaurantsStore

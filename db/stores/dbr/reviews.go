@@ -24,12 +24,18 @@ type reviewsStore struct {
 	session *dbr.Session
 }
 
+// NewReviewsStore returns ReviewsStore that uses the DBR driver
 func NewReviewsStore(session *dbr.Session) stores.ReviewsStore {
 	return &reviewsStore{
 		session: session,
 	}
 }
 
+// Insert starts a new transaction and makes the following changes:
+// 1. Inserts the review in the reviews table
+// 2. Swaps the restaurant.min_review with the current review in case it has worse score
+// 3. Swaps the restaurant.max_review with the current review in case it has better score
+// 4. Updates the restaurant.ratings_total and restaurant.ratings_count so that restaurant.average_rating is automatically updated by the DB
 func (rs *reviewsStore) Insert(review *models.Review) error {
 	if review.Id == "" {
 		review.Id = uuid.NewV4().String()
@@ -84,6 +90,7 @@ func (rs *reviewsStore) Insert(review *models.Review) error {
 	return errors.Wrap(tx.Commit(), "could not commit transaction")
 }
 
+// ExistsForUserAndRestaurant checks whether a a particular user has already written a review for a particular restaurant
 func (rs *reviewsStore) ExistsForUserAndRestaurant(userId, restaurantId string) (bool, error) {
 	idFoo := ""
 
@@ -104,6 +111,7 @@ func (rs *reviewsStore) ExistsForUserAndRestaurant(userId, restaurantId string) 
 	return true, nil
 }
 
+// ListForRestaurant returns reviews for a particular restaurantId by applying filters (pagination, orderBy, only unanswered reviews)
 func (rs *reviewsStore) ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error) {
 	reviews := make([]models.Review, 0, top)
 

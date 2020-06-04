@@ -15,12 +15,14 @@ type usersStore struct {
 	session *dbr.Session
 }
 
+// NewUsersStore returns a UsersStore that uses the DBR driver
 func NewUsersStore(session *dbr.Session) stores.UsersStore {
 	return &usersStore{
 		session: session,
 	}
 }
 
+// Insert adds a new user to the database
 func (us *usersStore) Insert(user *models.User) error {
 	_, err := us.session.
 		InsertInto(usersTable).
@@ -31,6 +33,7 @@ func (us *usersStore) Insert(user *models.User) error {
 	return errors.Wrap(err, "could not insert new user")
 }
 
+// GetByEmail returns a user by its email
 func (us *usersStore) GetByEmail(email string) (*models.User, error) {
 	user := new(models.User)
 	err := us.session.
@@ -50,6 +53,7 @@ func (us *usersStore) GetByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
+// ConfirmEmail sets the user email as confirmed and removes the confirmation token from the DB
 func (us *usersStore) ConfirmEmail(id string) error {
 	_, err := us.session.
 		Update(usersTable).

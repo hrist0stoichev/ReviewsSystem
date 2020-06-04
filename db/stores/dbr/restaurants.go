@@ -34,12 +34,15 @@ type restaurantsStore struct {
 	session *dbr.Session
 }
 
+// NewRestaurantsStore returns a RestaurantsStore that uses the DBR driver
 func NewRestaurantsStore(session *dbr.Session) stores.RestaurantsStore {
 	return &restaurantsStore{
 		session: session,
 	}
 }
 
+// Insert generates a new ID for the restaurant and inserts it in the database. The ID can then be used by the callers of this method
+// in case an error is not returned.
 func (rs *restaurantsStore) Insert(restaurant *models.Restaurant) error {
 	if restaurant.Id == "" {
 		restaurant.Id = uuid.NewV4().String()
@@ -54,6 +57,8 @@ func (rs *restaurantsStore) Insert(restaurant *models.Restaurant) error {
 	return errors.Wrap(err, "could not insert into restaurants table")
 }
 
+// GetByRating returns a list of restaurants ordered by average rating, applying a number of filters (pagination, rating range, specific owner)
+// There is an index on the averageRating column so that this query executes faster.
 func (rs *restaurantsStore) GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error) {
 	query := rs.session.
 		Select(id, name, city, address, img, description, averageRating).
@@ -77,6 +82,7 @@ func (rs *restaurantsStore) GetByRating(top, skip int, forOwnerId *string, minRa
 	return restaurants, nil
 }
 
+// Exists check if a restaurant with a given ID exists.
 func (rs *restaurantsStore) Exists(restId string) (bool, error) {
 	idFoo := ""
 
@@ -97,6 +103,10 @@ func (rs *restaurantsStore) Exists(restId string) (bool, error) {
 	return true, nil
 }
 
+// GetSingle returns a restaurant by id, populating its min_review and max_review fields. This operation is extremely optimized
+// as the min_review_id and max_review_id are stored within the restaurant record and updated only when new reviews are added to the
+// restaurant. This allows for getting the restaurant and its worst and best reviews using a single query without searching in the
+// reviews table every time.
 func (rs *restaurantsStore) GetSingle(resId string) (*models.Restaurant, error) {
 	r := struct {
 		Id                 string
