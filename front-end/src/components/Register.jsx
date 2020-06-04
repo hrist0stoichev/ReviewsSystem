@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useRef, useState} from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -6,6 +6,8 @@ import {authenticationService} from "../services/auth";
 
 export default function Register(props) {
   const [validated, setValidated] = useState(false);
+  const isOwner = useRef(false);
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -18,7 +20,7 @@ export default function Register(props) {
         "email": form.email.value,
         "password": form.password.value,
         "confirm_password": form.confirmPassword.value,
-        "is_owner": form.isOwner.value === "on",
+        "is_owner": isOwner.current,
       };
 
       authenticationService.register(user)
@@ -64,7 +66,7 @@ export default function Register(props) {
         </Form.Group>
 
         <Form.Group controlId="formIsOwner">
-          <Form.Check type="switch" label="Register as an owner" name="isOwner" />
+          <Form.Check onChange={() => isOwner.current = !isOwner.current } type="switch" label="Register as an owner" name="isOwner" />
         </Form.Group>
 
         <Button variant="primary" type="submit" >
