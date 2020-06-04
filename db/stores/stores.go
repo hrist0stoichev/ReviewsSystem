@@ -18,6 +18,8 @@ type RestaurantsStore interface {
 }
 
 type ReviewsStore interface {
+	GetById(revId string) (*models.Review, error)
+	Update(review *models.Review) error
 	Insert(review *models.Review) error
 	ExistsForUserAndRestaurant(userId, restaurantId string) (bool, error)
 	ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error)

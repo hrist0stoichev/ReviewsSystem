@@ -18,3 +18,7 @@ type ReviewSimpleResponse struct {
 	Comment   string    `json:"comment"`
 	Answer    *string   `json:"answer"`
 }
+
+type AnswerReviewRequest struct {
+	Answer string `json:"answer" validate:"required,min=30,max=300"`
+}

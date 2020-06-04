@@ -41,6 +41,6 @@ function addAnswer(id, answer) {
     body: JSON.stringify({answer: answer}),
   };
 
-  return fetch(`${config.apiUrl}/api/v1/reviews/${id}`, requestOptions)
+  return fetch(`${config.apiUrl}/api/v1/reviews/${id}/answer`, requestOptions)
     .then(handleResponse)
 }

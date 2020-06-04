@@ -11,7 +11,13 @@ type ReviewsService interface {
 	Create(review *models.Review) error
 	HasUserReviewed(userId, restaurantId string) (bool, error)
 	ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error)
+	GetById(id string) (*models.Review, error)
+	Update(review *models.Review) error
 }
+
+var (
+	ErrReviewNotFound = errors.New("review not found")
+)
 
 type reviewsService struct {
 	db db.Manager
@@ -21,6 +27,24 @@ func NewReviews(db db.Manager) ReviewsService {
 	return &reviewsService{
 		db: db,
 	}
+}
+
+func (rs *reviewsService) GetById(id string) (*models.Review, error) {
+	review, err := rs.db.Reviews().GetById(id)
+	if err != nil {
+		if err == db.ErrNotFound {
+			return nil, ErrReviewNotFound
+		}
+
+		return nil, errors.Wrap(err, "cannot get review by id")
+	}
+
+	return review, nil
+}
+
+func (rs *reviewsService) Update(review *models.Review) error {
+	err := rs.db.Reviews().Update(review)
+	return errors.Wrap(err, "could not update review")
 }
 
 func (rs *reviewsService) Create(review *models.Review) error {

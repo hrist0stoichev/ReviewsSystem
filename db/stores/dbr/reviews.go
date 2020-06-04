@@ -1,10 +1,13 @@
 package dbr
 
 import (
+	"fmt"
+
 	"github.com/gocraft/dbr/v2"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/hrist0stoichev/ReviewsSystem/db"
 	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/db/stores"
 )
@@ -29,6 +32,43 @@ func NewReviewsStore(session *dbr.Session) stores.ReviewsStore {
 	return &reviewsStore{
 		session: session,
 	}
+}
+
+// GetById returns a review by its id or a ErrNotFound if it doesn't exist
+func (rs *reviewsStore) GetById(revId string) (*models.Review, error) {
+	review := models.Review{
+		Restaurant: &models.Restaurant{},
+	}
+
+	err := rs.session.
+		Select("*").
+		From(reviewsTable).
+		Join(restaurantsTable, fmt.Sprintf("%s.%s = %s.%s", reviewsTable, restaurantId, restaurantsTable, id)).
+		Where(fmt.Sprintf("%s.%s = ?", reviewsTable, reviewId), revId).
+		LoadOne(&review)
+
+	if err != nil {
+		if err == dbr.ErrNotFound {
+			return nil, db.ErrNotFound
+		}
+
+		return nil, errors.Wrap(err, "could not query for review")
+	}
+
+	return &review, nil
+}
+
+// Update updates the rating, comment, and answer of a given review by its id.
+func (rs *reviewsStore) Update(review *models.Review) error {
+	_, err := rs.session.
+		Update(reviewsTable).
+		Set(rating, review.Rating).
+		Set(comment, review.Comment).
+		Set(answer, review.Answer).
+		Where(fmt.Sprintf("%s = ?", reviewId), review.Id).
+		Exec()
+
+	return errors.Wrap(err, "could not update review")
 }
 
 // Insert starts a new transaction and makes the following changes:
@@ -113,10 +153,8 @@ func (rs *reviewsStore) ExistsForUserAndRestaurant(userId, restaurantId string) 
 
 // ListForRestaurant returns reviews for a particular restaurantId by applying filters (pagination, orderBy, only unanswered reviews)
 func (rs *reviewsStore) ListForRestaurant(restaurantId string, unanswered bool, top, skip uint64, orderBy string, isAsc bool) ([]models.Review, error) {
-	reviews := make([]models.Review, 0, top)
-
 	query := rs.session.
-		Select("*").
+		Select("reviews.id, reviews.rating, reviews.timestamp, reviews.comment, reviews.answer, users.email").
 		From(reviewsTable).
 		Join(usersTable, "reviews.reviewer_id = users.id").
 		Where("restaurant_id = ?", restaurantId).
@@ -129,9 +167,23 @@ func (rs *reviewsStore) ListForRestaurant(restaurantId string, unanswered bool, 
 			Where("answer is NULL")
 	}
 
-	_, err := query.Load(&reviews)
+	rows, err := query.Rows()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not load reviews")
+		return nil, errors.Wrap(err, "could not query for reviews")
+	}
+
+	reviews := make([]models.Review, 0, top)
+	for rows.Next() {
+		r := models.Review{
+			Reviewer: &models.User{},
+		}
+
+		err = rows.Scan(&r.Id, &r.Rating, &r.Timestamp, &r.Comment, &r.Answer, &r.Reviewer.Email)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot scan row")
+		}
+
+		reviews = append(reviews, r)
 	}
 
 	return reviews, nil

@@ -50,7 +50,8 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.ListByRating)).ServeHTTP)
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants/{id}").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.GetSingle)).ServeHTTP)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/reviews").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String())(http.HandlerFunc(reviewsController.Create)).ServeHTTP)
-	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/reviews").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(reviewsController.GetForRestaurant)).ServeHTTP)
+	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/reviews").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(reviewsController.ListForRestaurant)).ServeHTTP)
+	apiV1Router.Methods(http.MethodPut, http.MethodOptions).Path("/reviews/{id}/answer").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(reviewsController.Answer)).ServeHTTP)
 
 	return router
 }

@@ -171,7 +171,7 @@ func (rs *restaurantsStore) GetSingle(resId string) (*models.Restaurant, error) 
 			Timestamp:    *r.MinReviewTimestamp,
 			Comment:      *r.MinReviewComment,
 			Answer:       r.MinReviewAnswer,
-			Reviewer: models.User{
+			Reviewer: &models.User{
 				Email: *r.MinReviewReviewer,
 			},
 		}
@@ -185,7 +185,7 @@ func (rs *restaurantsStore) GetSingle(resId string) (*models.Restaurant, error) 
 			Timestamp:    *r.MaxReviewTimestamp,
 			Comment:      *r.MaxReviewComment,
 			Answer:       r.MaxReviewAnswer,
-			Reviewer: models.User{
+			Reviewer: &models.User{
 				Email: *r.MaxReviewReviewer,
 			},
 		}
