@@ -21,6 +21,7 @@ type usersController struct {
 	encryptionService services.EncryptionService
 	tokensService     services.TokensService
 	emailsService     services.EmailsService
+	oauth2Service     services.OAuth2Service
 	baseController
 }
 
@@ -29,6 +30,7 @@ func NewUsers(
 	encryptionService services.EncryptionService,
 	tokensService services.TokensService,
 	emailsService services.EmailsService,
+	oauth2Service services.OAuth2Service,
 	logger log.Logger,
 	validator Validator,
 ) *usersController {
@@ -37,6 +39,7 @@ func NewUsers(
 		encryptionService: encryptionService,
 		tokensService:     tokensService,
 		emailsService:     emailsService,
+		oauth2Service:     oauth2Service,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -152,6 +155,83 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		Token:   jwt,
 		Expires: time.Unix(claims.ExpiresAt.Unix(), 0),
 		Email:   user.Email,
+		Role:    claims.Role,
+	}
+
+	uc.returnJsonResponse(res, resp)
+}
+
+func (uc *usersController) RedirectToFacebookAuth(res http.ResponseWriter, req *http.Request) {
+	redirectionURL := uc.oauth2Service.GenerateAuthURL()
+	http.Redirect(res, req, redirectionURL, http.StatusTemporaryRedirect)
+}
+
+func (uc *usersController) HandleFacebookLoginCallback(res http.ResponseWriter, req *http.Request) {
+	state := req.FormValue("state")
+	code := req.FormValue("code")
+
+	token, err := uc.oauth2Service.GetToken(state, code)
+	if err != nil {
+		uc.logger.WithError(err).Warnln("Failed to get oauth2 token")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	userInfo, err := uc.oauth2Service.GetUserInfo(token)
+	if err != nil {
+		uc.logger.WithError(err).Warnln("Failed to get oauth2 user info")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	// Some internal server error occurred
+	dbUser, err := uc.usersService.GetByEmail(userInfo.Email)
+	if err != nil && err != services.ErrUserNotFound {
+		uc.logger.WithError(err).Warnln("Failed to get user by email")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	// The user is not found
+	if err == services.ErrUserNotFound {
+		user := &models.User{
+			Email:                  userInfo.Email,
+			EmailConfirmed:         true,
+			EmailConfirmationToken: nil,
+			HashedPassword:         "",
+			Role:                   models.Regular,
+		}
+
+		err = uc.usersService.CreateUser(user)
+		if err != nil {
+			uc.logger.WithError(err).Warnln("Failed to create new facebook user")
+			http.Error(res, InternalServerError, http.StatusInternalServerError)
+			return
+		}
+
+		dbUser = user
+	} else { // The user is found
+		// The user is found but they haven't registered through facebook
+		if dbUser.HashedPassword != "" {
+			http.Error(res, "You have already registered with this email from the basic registration form!", http.StatusConflict)
+			return
+		}
+	}
+
+	jwt, claims, err := uc.tokensService.GenerateSignedToken(&services.UserClaims{
+		Id:   dbUser.Id,
+		Role: dbUser.Role.String(),
+	})
+	if err != nil {
+		uc.logger.WithError(err).Warnln("Failed to generate signed token")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	resp := transfermodels.LoginResponse{
+		Token:   jwt,
+		Expires: time.Unix(claims.ExpiresAt.Unix(), 0),
+		Email:   dbUser.Email,
 		Role:    claims.Role,
 	}
 

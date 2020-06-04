@@ -3,6 +3,7 @@ package dbr
 import (
 	"github.com/gocraft/dbr/v2"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/hrist0stoichev/ReviewsSystem/db"
 	"github.com/hrist0stoichev/ReviewsSystem/db/models"
@@ -24,6 +25,10 @@ func NewUsersStore(session *dbr.Session) stores.UsersStore {
 
 // Insert adds a new user to the database
 func (us *usersStore) Insert(user *models.User) error {
+	if user.Id == "" {
+		user.Id = uuid.NewV4().String()
+	}
+
 	_, err := us.session.
 		InsertInto(usersTable).
 		Columns("email", "email_confirmed", "email_confirmation_token", "hashed_password", "role").

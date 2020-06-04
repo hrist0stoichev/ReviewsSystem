@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import {authenticationService} from "../services/auth";
+import config from 'config';
 
 export default function Login(props) {
   const [validated, setValidated] = useState(false);
@@ -44,9 +45,9 @@ export default function Login(props) {
           <Form.Control.Feedback type="invalid">Please provide a password!</Form.Control.Feedback>
         </Form.Group>
 
-        <Button variant="primary" type="submit" >
-          Login
-        </Button>
+
+        <Button variant="success" type="submit" >Login</Button>
+        <Button href={`${config.apiUrl}/api/v1/login/facebook`} style={{position: "absolute", right: "1em"}} variant="primary">Login with facebook</Button>
       </Form>
     </Col>
   );

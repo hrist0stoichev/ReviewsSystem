@@ -14,4 +14,5 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 )
