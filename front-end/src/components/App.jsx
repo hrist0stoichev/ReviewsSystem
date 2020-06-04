@@ -11,6 +11,9 @@ import Restaurant from "./Restaurant";
 import RestaurantList from "./RestaurantList";
 import AddRestaurant from "./AddRestaurant";
 
+import queryString from 'query-string';
+import {authenticationService} from "../services/auth";
+
 export default function App() {
   const [addRestaurantModalVisible, setAddRestaurantModalVisible] = useState(false)
   const [alert, setAlert] = useState({
@@ -33,6 +36,34 @@ export default function App() {
     })
   }
 
+  const handleRedirections = (props) => {
+    props.history.push("/login");
+
+    const params = queryString.parse(props.location.search);
+    if (params.confirmation_successful === "true") {
+      showAlert("Email confirmation successful", true);
+    }
+  }
+
+  const handleFacebookCallback = (props) => {
+    const fullUrl = window.location.href;
+    const queryParameters = fullUrl.substring(fullUrl.indexOf("?"), fullUrl.length - 5);
+    const params = queryString.parse(queryParameters);
+
+    if (params.state && params.code) {
+      window.history.replaceState({}, '', location.pathname);
+      authenticationService.facebookLogin(params.state, params.code)
+        .then((res) => {
+          props.history.push("/restaurants");
+          showAlert("Hello, " + res.email, true);
+        })
+        .catch((err) => {
+          props.history.push("/login")
+          showAlert(err, false);
+        })
+    }
+  }
+
   return (
     <div>
       <Header showAlert={showAlert} showAddRestaurantModal={() => setAddRestaurantModalVisible(true)} />
@@ -45,7 +76,8 @@ export default function App() {
 
         <HashRouter>
           <Switch>
-            <Route exact path="/" render={(props) => {props.history.push("login")}} />
+            <Route exact path="/_=_" render={(props) => {handleFacebookCallback(props)}} /> {/* Hack for handling facebook callback using a hashrouter */}
+            <Route exact path="/" render={(props) => {handleRedirections(props)}} />
             <Route exact path="/login" render={(props) => <Login showAlert={showAlert} {...props} />} />
             <Route exact path="/register" render={(props) => <Register showAlert={showAlert} {...props} />} />
             <Route exact path="/restaurants" render={(props) => <RestaurantList showAlert={showAlert} {...props} />} />

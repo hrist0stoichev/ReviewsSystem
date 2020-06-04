@@ -47,7 +47,7 @@ export default function Login(props) {
 
 
         <Button variant="success" type="submit" >Login</Button>
-        <Button href={`${config.apiUrl}/api/v1/login/facebook`} style={{position: "absolute", right: "1em"}} variant="primary">Login with facebook</Button>
+        <Button href={`${config.apiUrl}/api/v1/facebookauth`} style={{position: "absolute", right: "1em"}} variant="primary">Login with facebook</Button>
       </Form>
     </Col>
   );

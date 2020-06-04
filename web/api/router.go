@@ -28,7 +28,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	oauth2Service := services.NewOauth2(oauth2.Config{
 		ClientID:     "",
 		ClientSecret: "",
-		RedirectURL:  "http://localhost:8001/api/v1/token/facebook",
+		RedirectURL:  "http://localhost:9000/#",
 		Scopes:       []string{"email"},
 		Endpoint:     facebook.Endpoint,
 	}, "https://graph.facebook.com/me", logger)
@@ -57,8 +57,8 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/users/confirm-email").HandlerFunc(usersController.ConfirmEmail)
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/token").HandlerFunc(usersController.Login)
 
-	apiV1Router.Methods(http.MethodGet).Path("/login/facebook").HandlerFunc(usersController.RedirectToFacebookAuth)
-	apiV1Router.Methods(http.MethodGet).Path("/token/facebook").HandlerFunc(usersController.HandleFacebookLoginCallback)
+	apiV1Router.Methods(http.MethodGet).Path("/facebookauth").HandlerFunc(usersController.RedirectToFacebookAuth)
+	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/token/facebook").HandlerFunc(usersController.FacebookLogin)
 
 	apiV1Router.Methods(http.MethodPost, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Owner.String())(http.HandlerFunc(restaurantsController.Create)).ServeHTTP)
 	apiV1Router.Methods(http.MethodGet, http.MethodOptions).Path("/restaurants").HandlerFunc(authMiddleware.AuthorizeForRoles(models.Regular.String(), models.Owner.String(), models.Admin.String())(http.HandlerFunc(restaurantsController.ListByRating)).ServeHTTP)

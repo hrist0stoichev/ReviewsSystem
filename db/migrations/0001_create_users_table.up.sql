@@ -7,7 +7,7 @@ CREATE TABLE users (
     email VARCHAR (64) UNIQUE NOT NULL,
     email_confirmed boolean NOT NULL,
     email_confirmation_token VARCHAR (30),
-    hashed_password CHAR (60) NOT NULL,
+    hashed_password VARCHAR (60) NOT NULL,
     role role NOT NULL
 );
 

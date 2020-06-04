@@ -7,6 +7,7 @@ const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('
 
 export const authenticationService = {
   login,
+  facebookLogin,
   logout,
   register,
   authHeader,
@@ -30,7 +31,21 @@ function login(email, password) {
     body: JSON.stringify({ email, password })
   };
 
-  return fetch(`${config.apiUrl}/api/v1/token`, requestOptions)
+  return handleLogin(`${config.apiUrl}/api/v1/token`, requestOptions);
+}
+
+function facebookLogin(state, code) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state, code })
+  };
+
+  return handleLogin(`${config.apiUrl}/api/v1/token/facebook`, requestOptions);
+}
+
+function handleLogin(url, requestOptions) {
+  return fetch(url, requestOptions)
     .then(handleResponse)
     .then(user => {
       localStorage.setItem('currentUser', JSON.stringify(user));

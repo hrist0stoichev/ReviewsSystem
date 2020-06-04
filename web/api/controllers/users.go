@@ -166,11 +166,17 @@ func (uc *usersController) RedirectToFacebookAuth(res http.ResponseWriter, req *
 	http.Redirect(res, req, redirectionURL, http.StatusTemporaryRedirect)
 }
 
-func (uc *usersController) HandleFacebookLoginCallback(res http.ResponseWriter, req *http.Request) {
-	state := req.FormValue("state")
-	code := req.FormValue("code")
+func (uc *usersController) FacebookLogin(res http.ResponseWriter, req *http.Request) {
+	fbLoginRequest := struct {
+		State string `json:"state"`
+		Code  string `json:"code"`
+	}{}
+	if err := json.NewDecoder(req.Body).Decode(&fbLoginRequest); err != nil {
+		http.Error(res, ModelDecodeError, http.StatusBadRequest)
+		return
+	}
 
-	token, err := uc.oauth2Service.GetToken(state, code)
+	token, err := uc.oauth2Service.GetToken(fbLoginRequest.State, fbLoginRequest.Code)
 	if err != nil {
 		uc.logger.WithError(err).Warnln("Failed to get oauth2 token")
 		http.Error(res, InternalServerError, http.StatusInternalServerError)

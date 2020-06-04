@@ -64,7 +64,7 @@ func (os *oauthService) GetToken(state, code string) (string, error) {
 
 	token, err := os.config.Exchange(context.Background(), code)
 	if err != nil {
-		return "", errors.New("could not exchange code for token")
+		return "", errors.Wrap(err, "could not exchange code for token")
 	}
 
 	return token.AccessToken, nil
