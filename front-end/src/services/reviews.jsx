@@ -4,7 +4,8 @@ import {handleResponse} from "./common";
 
 export const reviewsService = {
   getForRestaurant,
-  add
+  add,
+  addAnswer
 }
 function getForRestaurant(id, top, skip) {
   const requestOptions = {
@@ -27,5 +28,19 @@ function add(review) {
   };
 
   return fetch(`${config.apiUrl}/api/v1/reviews`, requestOptions)
+    .then(handleResponse)
+}
+
+function addAnswer(id, answer) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: {
+      ...authenticationService.authHeader(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({answer: answer}),
+  };
+
+  return fetch(`${config.apiUrl}/api/v1/reviews/${id}`, requestOptions)
     .then(handleResponse)
 }

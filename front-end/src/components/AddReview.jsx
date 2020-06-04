@@ -23,7 +23,7 @@ export default function AddReview(props) {
 
       reviewsService.add(review)
         .then(() => {
-          props.showAlert(`Your reviews was successfully added`, true);
+          props.showAlert(`Your review was successfully added`, true);
           props.handleClose();
           location.reload();
         })

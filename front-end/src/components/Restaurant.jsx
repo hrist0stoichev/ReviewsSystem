@@ -55,12 +55,12 @@ export default function Restaurant(props) {
       <hr />
       {/*If a min_review exists, it is guaranteed that a max_review also exists*/}
       {restaurant.min_review &&
-      <Row style={{marginTop: "40px"}}>
-        <Col lg={{ offset: 1, span: 4}}>
-          <Review review={restaurant.min_review} />
+      <Row>
+        <Col style={{marginTop: "40px"}} lg={{ offset: 1, span: 4}}>
+          <Review showAlert={props.showAlert} review={restaurant.min_review} />
         </Col>
-        <Col lg={{ offset: 2, span: 4}}>
-          <Review review={restaurant.max_review} />
+        <Col style={{marginTop: "40px"}} lg={{ offset: 2, span: 4}}>
+          <Review showAlert={props.showAlert} review={restaurant.max_review} />
         </Col>
       </Row>
       }
@@ -71,39 +71,39 @@ export default function Restaurant(props) {
           <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 0 && <Review review={reviews[0]}/>}
+                {reviews.length > 0 && <Review showAlert={props.showAlert} review={reviews[0]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 1 && <Review review={reviews[1]}/>}
+                {reviews.length > 1 && <Review showAlert={props.showAlert} review={reviews[1]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 2 && <Review review={reviews[2]}/>}
+                {reviews.length > 2 && <Review showAlert={props.showAlert} review={reviews[2]}/>}
               </Col>
             </Row>
           </Carousel.Item>
           {reviews.length > 3 && <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 3 && <Review review={reviews[3]}/>}
+                {reviews.length > 3 && <Review showAlert={props.showAlert} review={reviews[3]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 4 && <Review review={reviews[4]}/>}
+                {reviews.length > 4 && <Review showAlert={props.showAlert} review={reviews[4]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 5 && <Review review={reviews[5]}/>}
+                {reviews.length > 5 && <Review showAlert={props.showAlert} review={reviews[5]}/>}
               </Col>
             </Row>
           </Carousel.Item>}
           {reviews.length > 6 && <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 6 && <Review review={reviews[6]}/>}
+                {reviews.length > 6 && <Review showAlert={props.showAlert} review={reviews[6]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 7 && <Review review={reviews[7]}/>}
+                {reviews.length > 7 && <Review showAlert={props.showAlert} review={reviews[7]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 8 && <Review review={reviews[8]}/>}
+                {reviews.length > 8 && <Review showAlert={props.showAlert} review={reviews[8]}/>}
               </Col>
             </Row>
           </Carousel.Item>}
