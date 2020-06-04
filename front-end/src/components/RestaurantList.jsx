@@ -98,6 +98,7 @@ export default function RestaurantList(props) {
         <Col lg={{ span: 3, offset: 9 }}>
           <InputRange
             formatLabel={value => `${value} stars`}
+            allowSameValues={true}
             step={0.5}
             maxValue={5}
             minValue={0}
