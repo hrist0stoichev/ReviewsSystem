@@ -47,7 +47,6 @@ func NewUsers(
 func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) {
 	userRequest := transfermodels.CreateUserRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&userRequest); err != nil {
-		uc.logger.WithError(err).Warnln(ModelDecodeError)
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
 		return
 	}
@@ -104,13 +103,14 @@ func (uc *usersController) Register(res http.ResponseWriter, req *http.Request) 
 		}
 	}()
 
-	res.WriteHeader(http.StatusOK)
+	uc.returnJsonResponse(res, transfermodels.CreateUserResponse{
+		Ok: true,
+	})
 }
 
 func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 	loginRequest := transfermodels.LoginRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&loginRequest); err != nil {
-		uc.logger.WithError(err).Warnln(ModelDecodeError)
 		http.Error(res, ModelDecodeError, http.StatusBadRequest)
 		return
 	}
@@ -132,7 +132,7 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO: Uncomment this line
+	// TODO: Uncomment this line when done with testing
 	// if !user.EmailConfirmed {
 	// 	http.Error(res, EmailNotConfirmed, http.StatusBadRequest)
 	// 	return
@@ -155,9 +155,7 @@ func (uc *usersController) Login(res http.ResponseWriter, req *http.Request) {
 		Role:    claims.Role,
 	}
 
-	if err = json.NewEncoder(res).Encode(resp); err != nil {
-		uc.logger.WithError(err).Warnln("Could not encode response")
-	}
+	uc.returnJsonResponse(res, resp)
 }
 
 func (uc *usersController) ConfirmEmail(res http.ResponseWriter, req *http.Request) {
@@ -165,19 +163,19 @@ func (uc *usersController) ConfirmEmail(res http.ResponseWriter, req *http.Reque
 	token := req.URL.Query().Get("token")
 
 	if email == "" || token == "" {
-		http.Error(res, "User not found", http.StatusNotFound)
+		http.NotFound(res, req)
 		return
 	}
 
 	user, err := uc.usersService.GetByEmail(email)
 	if err != nil {
 		if err == services.ErrUserNotFound {
-			http.Error(res, "User not found", http.StatusNotFound)
+			http.NotFound(res, req)
 			return
 		}
 
 		uc.logger.WithError(err).Warnln("Could not get username by email")
-		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
 		return
 	}
 
@@ -187,13 +185,13 @@ func (uc *usersController) ConfirmEmail(res http.ResponseWriter, req *http.Reque
 	}
 
 	if *user.EmailConfirmationToken != token {
-		http.Error(res, "User not found", http.StatusNotFound)
+		http.NotFound(res, req)
 		return
 	}
 
 	if err = uc.usersService.ConfirmEmail(user.Id); err != nil {
 		uc.logger.WithError(err).Warnln("could not confirm email")
-		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
 		return
 	}
 

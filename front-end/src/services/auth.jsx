@@ -53,5 +53,5 @@ function register(user) {
 
 function logout() {
   localStorage.removeItem('currentUser');
-  currentUserSubject.next({email: "", role: ""});
+  currentUserSubject.next(null);
 }

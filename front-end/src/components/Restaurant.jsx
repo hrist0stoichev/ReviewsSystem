@@ -44,7 +44,7 @@ export default function Restaurant(props) {
           <p>{restaurant.description}</p>
         </Col>
         <Col lg={6}>
-          {authenticationService.currentUserValue.role !== "owner" &&<Row>
+          {authenticationService.currentUserValue && authenticationService.currentUserValue.role !== "owner" &&<Row>
             <Col lg={{ offset: 8, span: 4}}>
               <div style={{padding: "10px", right: 0}}><Button onClick={() => {setAddReviewVisible(true)}} variant="primary">Leave a review</Button></div>
             </Col>

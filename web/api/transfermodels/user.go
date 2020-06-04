@@ -12,6 +12,10 @@ type CreateUserRequest struct {
 	IsOwner         bool   `json:"is_owner"`
 }
 
+type CreateUserResponse struct {
+	Ok bool `json:"ok"`
+}
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

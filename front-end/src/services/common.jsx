@@ -7,7 +7,7 @@ export function handleResponse(response) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // The token has expired
+        // The token has most probably expired, logout and redirect to login
         authenticationService.logout();
         location.reload();
       }
