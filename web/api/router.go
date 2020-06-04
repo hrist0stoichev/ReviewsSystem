@@ -35,7 +35,7 @@ func NewRouter(dbManager db.Manager, logger log.Logger, validator controllers.Va
 	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), validator)
 	reviewsController := controllers.NewReviews(reviewsService, restaurantService, logger.WithField("module", "reviewsController"), validator)
 
-	authMiddleware := middlewares.NewAuth(tokensService)
+	authMiddleware := middlewares.NewAuth(tokensService, logger)
 
 	router := mux.NewRouter()
 

@@ -26,9 +26,10 @@ type authMiddleware struct {
 	logger        log.Logger
 }
 
-func NewAuth(tokensService services.TokensService) *authMiddleware {
+func NewAuth(tokensService services.TokensService, logger log.Logger) *authMiddleware {
 	return &authMiddleware{
 		tokensService: tokensService,
+		logger:        logger,
 	}
 }
 
@@ -51,6 +52,11 @@ func (ah *authMiddleware) AuthorizeForRoles(roles ...string) func(http.Handler) 
 			case bearerTokenPrefix:
 				userClaims, err := ah.tokensService.ParseSignedToken(splitToken[1])
 				if err != nil {
+					if err != services.ErrExpiredToken {
+						http.Error(w, "Your token has expired", http.StatusUnauthorized)
+						return
+					}
+
 					ah.logger.WithError(err).Warnln("could not parse signed token")
 					http.Error(w, unauthorizedErrorMessage, http.StatusUnauthorized)
 					return

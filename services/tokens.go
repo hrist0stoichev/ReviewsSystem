@@ -18,7 +18,10 @@ type UserClaims struct {
 	Role string
 }
 
-var ErrInvalidToken = errors.New("invalid token")
+var (
+	ErrInvalidToken = errors.New("invalid token")
+	ErrExpiredToken = errors.New("token has expired")
+)
 
 type tokensService struct {
 	validFor   time.Duration
@@ -67,6 +70,10 @@ func (us *tokensService) ParseSignedToken(tokenStr string) (*UserClaims, error) 
 	})
 
 	if err != nil {
+		if _, ok := err.(*jwt.TokenExpiredError); ok {
+			return nil, ErrExpiredToken
+		}
+
 		return nil, errors.Wrap(err, "could not parse claims from string token")
 	}
 
