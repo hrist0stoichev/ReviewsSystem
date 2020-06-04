@@ -7,13 +7,13 @@ export const reviewsService = {
   add,
   addAnswer
 }
-function getForRestaurant(id, top, skip) {
+function getForRestaurant(id, top, skip, unanswered) {
   const requestOptions = {
     method: 'GET',
     headers: authenticationService.authHeader()
   }
 
-  return fetch(`${config.apiUrl}/api/v1/reviews?restaurantId=${id}&top=${top}&skip=${skip}`, requestOptions)
+  return fetch(`${config.apiUrl}/api/v1/reviews?restaurantId=${id}&top=${top}&skip=${skip}&unanswered=${unanswered ? "true" : "false"}`, requestOptions)
     .then(handleResponse)
 }
 

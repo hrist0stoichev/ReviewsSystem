@@ -10,21 +10,39 @@ import {reviewsService} from "../services/reviews";
 import Button from "react-bootstrap/Button";
 import {authenticationService} from "../services/auth";
 import AddReview from "./AddReview";
+import FormCheck from "react-bootstrap/FormCheck";
 
 export default function Restaurant(props) {
   const [restaurant, setRestaurant] = useState({});
   const [reviews, setReviews] = useState([]);
   const [addReviewVisible, setAddReviewVisible] = useState(false);
+  const [unansweredSwitchToggled, setUnansweredSwitchToggled]  = useState(false);
 
   useEffect(() => {
     restaurantsService.getSingle(props.match.params.id)
       .then(res => setRestaurant(res))
       .catch(err => props.showAlert(err, false));
 
-    reviewsService.getForRestaurant(props.match.params.id, 9, 0)
+    loadReviews(isOwner());
+    setUnansweredSwitchToggled(isOwner());
+  }, []);
+
+  const handleUnansweredSwitch = () => {
+    setUnansweredSwitchToggled(prev => {
+      loadReviews(!prev)
+      return !prev
+    });
+  }
+
+  const loadReviews = (unanswered) => {
+    reviewsService.getForRestaurant(props.match.params.id, 9, 0, unanswered)
       .then(res => setReviews(res))
       .catch(err => props.showAlert(err, false));
-  }, []);
+  }
+  
+  const isOwner = () => {
+    return authenticationService.currentUserValue && authenticationService.currentUserValue.role === "owner"
+  }
 
   return (
     <>
@@ -64,9 +82,19 @@ export default function Restaurant(props) {
         </Col>
       </Row>
       }
+      {isOwner() &&
+      <Row style={{marginTop: "60px"}}>
+        <FormCheck
+          id="unansweredSwitch"
+          type="switch"
+          checked={unansweredSwitchToggled}
+          onChange={handleUnansweredSwitch}
+          label="Unanswered only"
+        />
+      </Row>}
       {/*Hardcode the 9 most-recent reviews*/}
       {reviews.length > 0 &&
-      <Row style={{borderRadius: "5px", marginTop: "80px"}}>
+      <Row style={{borderRadius: "5px", marginTop: isOwner() ? "20px" : "80px"}}>
         <Carousel style={{width: "100%"}}>
           <Carousel.Item>
             <Row>
