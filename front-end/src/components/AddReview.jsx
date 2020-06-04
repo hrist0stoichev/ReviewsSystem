@@ -25,7 +25,7 @@ export default function AddReview(props) {
         .then(() => {
           props.showAlert(`Your review was successfully added`, true);
           props.handleClose();
-          location.reload();
+          props.handleAddingNewReview();
         })
         .catch((err) => {
           props.showAlert(err, false)

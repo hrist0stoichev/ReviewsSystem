@@ -24,7 +24,7 @@ export default function Review(props) {
       reviewsService.addAnswer(props.review.id, form.answer.value)
         .then(() => {
           props.showAlert(`You answered successfully!`, true);
-          location.reload();
+          props.handleAnsweringReview();
         })
         .catch((err) => {
           props.showAlert(err, false)

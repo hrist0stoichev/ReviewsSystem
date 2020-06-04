@@ -19,11 +19,7 @@ export default function Restaurant(props) {
   const [unansweredSwitchToggled, setUnansweredSwitchToggled]  = useState(false);
 
   useEffect(() => {
-    restaurantsService.getSingle(props.match.params.id)
-      .then(res => setRestaurant(res))
-      .catch(err => props.showAlert(err, false));
-
-    loadReviews(isOwner());
+    loadRestaurantAndReviews();
     setUnansweredSwitchToggled(isOwner());
   }, []);
 
@@ -32,6 +28,17 @@ export default function Restaurant(props) {
       loadReviews(!prev)
       return !prev
     });
+  }
+
+  const loadRestaurantAndReviews = () => {
+    loadRestaurant();
+    loadReviews();
+  }
+
+  const loadRestaurant = () => {
+    restaurantsService.getSingle(props.match.params.id)
+      .then(res => setRestaurant(res))
+      .catch(err => props.showAlert(err, false));
   }
 
   const loadReviews = (unanswered) => {
@@ -46,7 +53,7 @@ export default function Restaurant(props) {
 
   return (
     <>
-      <AddReview restaurant_id={props.match.params.id} showAlert={props.showAlert} show={addReviewVisible} handleClose={() => {setAddReviewVisible(false)}}/>
+      <AddReview handleAddingNewReview={loadRestaurantAndReviews} restaurant_id={props.match.params.id} showAlert={props.showAlert} show={addReviewVisible} handleClose={() => {setAddReviewVisible(false)}}/>
       <Row>
         <Col lg={6}>
           <Row>
@@ -75,10 +82,10 @@ export default function Restaurant(props) {
       {restaurant.min_review &&
       <Row>
         <Col style={{marginTop: "40px"}} lg={{ offset: 1, span: 4}}>
-          <Review showAlert={props.showAlert} review={restaurant.min_review} />
+          <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={restaurant.min_review} />
         </Col>
         <Col style={{marginTop: "40px"}} lg={{ offset: 2, span: 4}}>
-          <Review showAlert={props.showAlert} review={restaurant.max_review} />
+          <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={restaurant.max_review} />
         </Col>
       </Row>
       }
@@ -99,39 +106,39 @@ export default function Restaurant(props) {
           <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 0 && <Review showAlert={props.showAlert} review={reviews[0]}/>}
+                {reviews.length > 0 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[0]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 1 && <Review showAlert={props.showAlert} review={reviews[1]}/>}
+                {reviews.length > 1 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[1]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 2 && <Review showAlert={props.showAlert} review={reviews[2]}/>}
+                {reviews.length > 2 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[2]}/>}
               </Col>
             </Row>
           </Carousel.Item>
           {reviews.length > 3 && <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 3 && <Review showAlert={props.showAlert} review={reviews[3]}/>}
+                {reviews.length > 3 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[3]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 4 && <Review showAlert={props.showAlert} review={reviews[4]}/>}
+                {reviews.length > 4 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[4]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 5 && <Review showAlert={props.showAlert} review={reviews[5]}/>}
+                {reviews.length > 5 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[5]}/>}
               </Col>
             </Row>
           </Carousel.Item>}
           {reviews.length > 6 && <Carousel.Item>
             <Row>
               <Col lg={4}>
-                {reviews.length > 6 && <Review showAlert={props.showAlert} review={reviews[6]}/>}
+                {reviews.length > 6 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[6]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 7 && <Review showAlert={props.showAlert} review={reviews[7]}/>}
+                {reviews.length > 7 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[7]}/>}
               </Col>
               <Col lg={4}>
-                {reviews.length > 8 && <Review showAlert={props.showAlert} review={reviews[8]}/>}
+                {reviews.length > 8 && <Review handleAnsweringReview={loadRestaurantAndReviews} showAlert={props.showAlert} review={reviews[8]}/>}
               </Col>
             </Row>
           </Carousel.Item>}
