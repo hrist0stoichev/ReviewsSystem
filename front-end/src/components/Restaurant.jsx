@@ -19,7 +19,8 @@ export default function Restaurant(props) {
   const [unansweredSwitchToggled, setUnansweredSwitchToggled]  = useState(false);
 
   useEffect(() => {
-    loadRestaurantAndReviews();
+    loadRestaurant();
+    loadReviews(isOwner());
     setUnansweredSwitchToggled(isOwner());
   }, []);
 
@@ -32,7 +33,7 @@ export default function Restaurant(props) {
 
   const loadRestaurantAndReviews = () => {
     loadRestaurant();
-    loadReviews();
+    loadReviews(unansweredSwitchToggled);
   }
 
   const loadRestaurant = () => {
@@ -41,8 +42,8 @@ export default function Restaurant(props) {
       .catch(err => props.showAlert(err, false));
   }
 
-  const loadReviews = (unanswered) => {
-    reviewsService.getForRestaurant(props.match.params.id, 9, 0, unanswered)
+  const loadReviews = (unansweredOnly) => {
+    reviewsService.getForRestaurant(props.match.params.id, 9, 0, unansweredOnly)
       .then(res => setReviews(res))
       .catch(err => props.showAlert(err, false));
   }

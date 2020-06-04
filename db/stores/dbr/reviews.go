@@ -36,26 +36,31 @@ func NewReviewsStore(session *dbr.Session) stores.ReviewsStore {
 
 // GetById returns a review by its id or a ErrNotFound if it doesn't exist
 func (rs *reviewsStore) GetById(revId string) (*models.Review, error) {
-	review := models.Review{
-		Restaurant: &models.Restaurant{},
-	}
-
-	err := rs.session.
-		Select("*").
+	rows, err := rs.session.
+		Select("reviews.id, reviews.restaurant_id, reviews.reviewer_id, reviews.rating, reviews.timestamp, reviews.comment, reviews.answer, restaurants.owner_id").
 		From(reviewsTable).
 		Join(restaurantsTable, fmt.Sprintf("%s.%s = %s.%s", reviewsTable, restaurantId, restaurantsTable, id)).
 		Where(fmt.Sprintf("%s.%s = ?", reviewsTable, reviewId), revId).
-		LoadOne(&review)
+		Rows()
 
 	if err != nil {
-		if err == dbr.ErrNotFound {
-			return nil, db.ErrNotFound
-		}
-
 		return nil, errors.Wrap(err, "could not query for review")
 	}
 
-	return &review, nil
+	if !rows.Next() {
+		return nil, db.ErrNotFound
+	}
+
+	r := models.Review{
+		Restaurant: &models.Restaurant{},
+	}
+
+	err = rows.Scan(&r.Id, &r.RestaurantId, &r.ReviewerId, &r.Rating, &r.Timestamp, &r.Comment, &r.Answer, &r.Restaurant.OwnerId)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not scan review row")
+	}
+
+	return &r, nil
 }
 
 // Update updates the rating, comment, and answer of a given review by its id.
