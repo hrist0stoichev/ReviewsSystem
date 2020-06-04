@@ -94,10 +94,10 @@ export default function RestaurantList(props) {
 
   return (
     <>
-      <Row style={{width: "100%"}}>
+      <Row style={{width: "100%", marginBottom: "30px"}}>
         <Col lg={{ span: 3, offset: 9 }}>
           <InputRange
-            formatLabel={value => `${value} stars`}
+            formatLabel={value => `${value} \u2B50`}
             allowSameValues={true}
             step={0.5}
             maxValue={5}
