@@ -5,7 +5,8 @@ import {handleResponse} from "./common";
 export const restaurantsService = {
   get,
   getSingle,
-  add
+  add,
+  del
 }
 
 function add(restaurant) {
@@ -35,6 +36,16 @@ function get(top, skip, minRating, maxRating, orderBy) {
 function getSingle(id) {
   const requestOptions = {
     method: 'GET',
+    headers: authenticationService.authHeader()
+  }
+
+  return fetch(`${config.apiUrl}/api/v1/restaurants/${id}`, requestOptions)
+    .then(handleResponse)
+}
+
+function del(id) {
+  const requestOptions = {
+    method: 'DELETE',
     headers: authenticationService.authHeader()
   }
 

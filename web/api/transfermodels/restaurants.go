@@ -29,3 +29,7 @@ type RestaurantDetailedResponse struct {
 	MinReview     *ReviewSimpleResponse `json:"min_review"`
 	MaxReview     *ReviewSimpleResponse `json:"max_review"`
 }
+
+type RestaurantDeleteResponse struct {
+	OK bool `json:"ok"`
+}

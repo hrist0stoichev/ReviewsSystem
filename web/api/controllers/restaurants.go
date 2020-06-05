@@ -190,3 +190,27 @@ func (rs *Restaurants) Create(res http.ResponseWriter, req *http.Request) {
 
 	rs.returnJsonResponse(res, restaurantResponse)
 }
+
+func (rs *Restaurants) Delete(res http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+
+	_, err := rs.restaurantsService.GetSingle(id)
+	if err != nil {
+		if err == services.ErrRestaurantNotFound {
+			http.NotFound(res, req)
+			return
+		}
+
+		rs.logger.WithError(err).Warnln("Cannot get restaurant")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	if err = rs.restaurantsService.Delete(id); err != nil {
+		rs.logger.WithError(err).Warnln("Cannot delete restaurant")
+		http.Error(res, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	rs.returnJsonResponse(res, transfermodels.RestaurantDeleteResponse{OK: true})
+}

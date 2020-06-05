@@ -6,6 +6,7 @@ import InputRange from 'react-input-range';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Badge from "react-bootstrap/Badge";
+import {authenticationService} from "../services/auth";
 
 export default function RestaurantList(props) {
   const defaultPageSize = 9;
@@ -60,6 +61,21 @@ export default function RestaurantList(props) {
     props.history.push("/restaurants/" + event.currentTarget.id);
   };
 
+  const handleRestaurantDelete = (index, id) => {
+    restaurantsService.del(id)
+      .then(() => {
+        props.showAlert("Successfully deleted", true)
+
+        setRestaurants(restaurants => {
+          restaurants.splice(index, 1);
+          return restaurants;
+        })
+      })
+      .catch((err) => {
+        props.showAlert(err, false)
+      })
+  }
+
   const getDecks = () => {
     const decks = [];
     for (let i = 0; i < restaurants.length; i += 3) {
@@ -69,7 +85,11 @@ export default function RestaurantList(props) {
           <Card onClick={handleCardClick} style={{height:"500px", cursor: "pointer"}} key={restaurants[j].id} id={restaurants[j].id}>
             <Card.Img style={{height:"50%"}} variant="top" src={restaurants[j].img || "https://www.opentable.com/img/restimages/150568.jpg"} />
             <Card.Body style={{height:"40%", overflow: "hidden"}}>
-              <Card.Title><Badge pill variant="primary">{restaurants[j].average_rating} <span>&#9733;</span></Badge> {restaurants[j].name}</Card.Title>
+              <Card.Title>
+                {authenticationService.currentUserValue && authenticationService.currentUserValue.role === "admin" &&
+                <a style={{marginLeft: "1em", marginRight: "1em"}} onClick={(e) => {e.preventDefault(); handleRestaurantDelete(j, restaurants[j].id);}} href="">Delete</a>}
+                <Badge pill variant="primary">{restaurants[j].average_rating} <span>&#9733;</span></Badge> {restaurants[j].name}
+              </Card.Title>
               <Card.Text>{restaurants[j].description}</Card.Text>
             </Card.Body>
             <Card.Footer style={{height:"10%"}}>

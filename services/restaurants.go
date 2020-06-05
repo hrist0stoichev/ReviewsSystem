@@ -12,6 +12,7 @@ type RestaurantsService interface {
 	ListByRating(top, skip int, userId string, userRole models.Role, minrRating, maxRating float32) ([]models.Restaurant, error)
 	GetSingle(id string) (*models.Restaurant, error)
 	Exists(id string) (bool, error)
+	Delete(restId string) error
 }
 
 var (
@@ -68,4 +69,9 @@ func (rs *restaurantsService) Exists(id string) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+func (rs *restaurantsService) Delete(id string) error {
+	err := rs.db.Restaurants().Delete(id)
+	return errors.Wrap(err, "cannot delete restaurant")
 }

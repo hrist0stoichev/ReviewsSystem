@@ -103,6 +103,15 @@ func (rs *restaurantsStore) Exists(restId string) (bool, error) {
 	return true, nil
 }
 
+func (rs *restaurantsStore) Delete(restId string) error {
+	_, err := rs.session.
+		DeleteFrom(restaurantsTable).
+		Where("id = ?", restId).
+		Exec()
+
+	return errors.Wrap(err, "could not delete restaurant")
+}
+
 // GetSingle returns a restaurant by id, populating its min_review and max_review fields. This operation is extremely optimized
 // as the min_review_id and max_review_id are stored within the restaurant record and updated only when new reviews are added to the
 // restaurant. This allows for getting the restaurant and its worst and best reviews using a single query without searching in the

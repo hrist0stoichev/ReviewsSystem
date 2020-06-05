@@ -15,6 +15,7 @@ type RestaurantsStore interface {
 	GetByRating(top, skip int, forOwnerId *string, minRating, maxRating float32) ([]models.Restaurant, error)
 	GetSingle(id string) (*models.Restaurant, error)
 	Exists(id string) (bool, error)
+	Delete(restId string) error
 }
 
 type ReviewsStore interface {

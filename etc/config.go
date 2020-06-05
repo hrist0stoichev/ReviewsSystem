@@ -18,6 +18,7 @@ type Config struct {
 	Tokens       TokensConfig
 	FacebookAuth FacebookAuthConfig
 	Email        EmailConfig
+	Admin        AdminConfig
 }
 
 type TokensConfig struct {
@@ -40,6 +41,11 @@ type EmailConfig struct {
 	ConfirmationEndpoint  string `env:"EMAIL_CONFIRMATION_ENDPOINT"`
 	RedirectionEndpoint   string `env:"EMAIL_REDIRECTION_ENDPOINT"`
 	SkipEmailVerification bool   `env:"SKIP_EMAIL_VERIFICATION"`
+}
+
+type AdminConfig struct {
+	Email    string `env:"DEFAULT_ADMIN_EMAIL"`
+	Password string `env:"DEFAULT_ADMIN_PASSWORD"`
 }
 
 func GetConfig() (*Config, error) {

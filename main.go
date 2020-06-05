@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2/facebook"
 
 	"github.com/hrist0stoichev/ReviewsSystem/db"
+	"github.com/hrist0stoichev/ReviewsSystem/db/models"
 	"github.com/hrist0stoichev/ReviewsSystem/db/stores/dbr"
 	"github.com/hrist0stoichev/ReviewsSystem/etc"
 	"github.com/hrist0stoichev/ReviewsSystem/lib/dbrdb"
@@ -71,6 +72,10 @@ func main() {
 		Endpoint:     facebook.Endpoint,
 	}, "https://graph.facebook.com/me", logger)
 
+	if err = addAdminIfDbEmpty(database, usersService, encryptionService, logger, cfg.Admin.Email, cfg.Admin.Password); err != nil {
+		logger.WithError(err).Fatalln("could not generate default admin user")
+	}
+
 	usersController := controllers.NewUsers(usersService, encryptionService, tokensService, emailService, facebookAuthService, cfg.Email.RedirectionEndpoint, cfg.Email.SkipEmailVerification, logger.WithField("module", "usersController"), v)
 	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), v)
 	reviewsController := controllers.NewReviews(reviewsService, restaurantService, logger.WithField("module", "reviewsController"), v)
@@ -106,4 +111,34 @@ func connectToDatabase(cfg *dbrdb.Config, logger log.Logger) (dbrdb.Database, er
 	}
 
 	return db, nil
+}
+
+func addAdminIfDbEmpty(db dbrdb.Database, usersService services.UsersService, encryptionService services.EncryptionService, logger log.Logger, email, password string) error {
+	numUsers := 1
+	err := db.Conn().NewSession(nil).Select("count(*)").From("users").LoadOne(&numUsers)
+	if err != nil {
+		return errors.Wrap(err, "cannot get number of users")
+	}
+
+	if numUsers == 0 {
+		saltedHash, err := encryptionService.GenerateSaltedHash(&password)
+		if err != nil {
+			return errors.Wrap(err, "cannot generate salted hash")
+		}
+
+		err = usersService.CreateUser(&models.User{
+			Email:          email,
+			EmailConfirmed: true,
+			HashedPassword: saltedHash,
+			Role:           models.Admin,
+		})
+
+		if err != nil {
+			return errors.Wrap(err, "cannot create default admin user")
+		}
+
+		logger.Infoln("Admin user created")
+	}
+
+	return nil
 }
