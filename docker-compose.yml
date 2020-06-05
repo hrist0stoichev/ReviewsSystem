@@ -26,6 +26,7 @@ services:
       FACEBOOK_CLIENT_SECRET: clientSecret
       FACEBOOK_REDIRECT_URL: http://localhost:9000/#
       FACEBOOK_SCOPES: email
+      SKIP_EMAIL_VERIFICATION: false
       EMAIL_SMTP_HOST: smtp.gmail.com
       EMAIL_SMTP_PORT: 587
       EMAIL_SMTP_USERNAME: yourGmail

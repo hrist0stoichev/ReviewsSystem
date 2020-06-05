@@ -71,7 +71,7 @@ func main() {
 		Endpoint:     facebook.Endpoint,
 	}, "https://graph.facebook.com/me", logger)
 
-	usersController := controllers.NewUsers(usersService, encryptionService, tokensService, emailService, facebookAuthService, cfg.Email.RedirectionEndpoint, logger.WithField("module", "usersController"), v)
+	usersController := controllers.NewUsers(usersService, encryptionService, tokensService, emailService, facebookAuthService, cfg.Email.RedirectionEndpoint, cfg.Email.SkipEmailVerification, logger.WithField("module", "usersController"), v)
 	restaurantsController := controllers.NewRestaurant(restaurantService, logger.WithField("module", "restaurantsController"), v)
 	reviewsController := controllers.NewReviews(reviewsService, restaurantService, logger.WithField("module", "reviewsController"), v)
 

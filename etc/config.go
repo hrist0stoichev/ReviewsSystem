@@ -33,12 +33,13 @@ type FacebookAuthConfig struct {
 }
 
 type EmailConfig struct {
-	SMTPHost             string `env:"EMAIL_SMTP_HOST"`
-	SMTPPort             string `env:"EMAIL_SMTP_PORT"`
-	Username             string `env:"EMAIL_SMTP_USERNAME"`
-	Password             string `env:"EMAIL_SMTP_PASSWORD"`
-	ConfirmationEndpoint string `env:"EMAIL_CONFIRMATION_ENDPOINT"`
-	RedirectionEndpoint  string `env:"EMAIL_REDIRECTION_ENDPOINT"`
+	SMTPHost              string `env:"EMAIL_SMTP_HOST"`
+	SMTPPort              string `env:"EMAIL_SMTP_PORT"`
+	Username              string `env:"EMAIL_SMTP_USERNAME"`
+	Password              string `env:"EMAIL_SMTP_PASSWORD"`
+	ConfirmationEndpoint  string `env:"EMAIL_CONFIRMATION_ENDPOINT"`
+	RedirectionEndpoint   string `env:"EMAIL_REDIRECTION_ENDPOINT"`
+	SkipEmailVerification bool   `env:"SKIP_EMAIL_VERIFICATION"`
 }
 
 func GetConfig() (*Config, error) {

@@ -17,12 +17,13 @@ const (
 )
 
 type Users struct {
-	usersService        services.UsersService
-	encryptionService   services.EncryptionService
-	tokensService       services.TokensService
-	emailsService       services.EmailsService
-	oauth2Service       services.OAuth2Service
-	redirectionEndpoint string
+	usersService          services.UsersService
+	encryptionService     services.EncryptionService
+	tokensService         services.TokensService
+	emailsService         services.EmailsService
+	oauth2Service         services.OAuth2Service
+	redirectionEndpoint   string
+	skipEmailVerification bool
 	baseController
 }
 
@@ -33,16 +34,18 @@ func NewUsers(
 	emailsService services.EmailsService,
 	oauth2Service services.OAuth2Service,
 	redirectionEndpoint string,
+	skipEmailVerification bool,
 	logger log.Logger,
 	validator Validator,
 ) *Users {
 	return &Users{
-		usersService:        usersService,
-		encryptionService:   encryptionService,
-		tokensService:       tokensService,
-		emailsService:       emailsService,
-		oauth2Service:       oauth2Service,
-		redirectionEndpoint: redirectionEndpoint,
+		usersService:          usersService,
+		encryptionService:     encryptionService,
+		tokensService:         tokensService,
+		emailsService:         emailsService,
+		oauth2Service:         oauth2Service,
+		redirectionEndpoint:   redirectionEndpoint,
+		skipEmailVerification: skipEmailVerification,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -138,7 +141,7 @@ func (uc *Users) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !user.EmailConfirmed {
+	if !uc.skipEmailVerification && !user.EmailConfirmed {
 		http.Error(res, EmailNotConfirmed, http.StatusBadRequest)
 		return
 	}
