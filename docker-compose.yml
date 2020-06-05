@@ -20,6 +20,18 @@ services:
       DBRDB_HOST: postgres
       DBRDB_DBNAME: reviewssystem
       DBRDB_MIGRATIONS_DIR: /db-migrations
+      TOKENS_VALID_FOR: 8h
+      TOKENS_SIGNING_KEY: samplePassword
+      FACEBOOK_CLIENT_ID: clientId
+      FACEBOOK_CLIENT_SECRET: clientSecret
+      FACEBOOK_REDIRECT_URL: http://localhost:9000/#
+      FACEBOOK_SCOPES: email
+      EMAIL_SMTP_HOST: smtp.gmail.com
+      EMAIL_SMTP_PORT: 587
+      EMAIL_SMTP_USERNAME: yourGmail
+      EMAIL_SMTP_PASSWORD: yourPassword
+      EMAIL_CONFIRMATION_ENDPOINT: http://localhost:8001/api/v1/users/confirm-email
+      EMAIL_REDIRECTION_ENDPOINT: http://localhost:9000/#/?confirmation_successful=true
     networks:
       - backend
 

@@ -17,11 +17,12 @@ const (
 )
 
 type Users struct {
-	usersService      services.UsersService
-	encryptionService services.EncryptionService
-	tokensService     services.TokensService
-	emailsService     services.EmailsService
-	oauth2Service     services.OAuth2Service
+	usersService        services.UsersService
+	encryptionService   services.EncryptionService
+	tokensService       services.TokensService
+	emailsService       services.EmailsService
+	oauth2Service       services.OAuth2Service
+	redirectionEndpoint string
 	baseController
 }
 
@@ -31,15 +32,17 @@ func NewUsers(
 	tokensService services.TokensService,
 	emailsService services.EmailsService,
 	oauth2Service services.OAuth2Service,
+	redirectionEndpoint string,
 	logger log.Logger,
 	validator Validator,
 ) *Users {
 	return &Users{
-		usersService:      usersService,
-		encryptionService: encryptionService,
-		tokensService:     tokensService,
-		emailsService:     emailsService,
-		oauth2Service:     oauth2Service,
+		usersService:        usersService,
+		encryptionService:   encryptionService,
+		tokensService:       tokensService,
+		emailsService:       emailsService,
+		oauth2Service:       oauth2Service,
+		redirectionEndpoint: redirectionEndpoint,
 		baseController: baseController{
 			logger:    logger,
 			validator: validator,
@@ -135,11 +138,10 @@ func (uc *Users) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO: Uncomment this line when done with testing
-	// if !user.EmailConfirmed {
-	// 	http.Error(res, EmailNotConfirmed, http.StatusBadRequest)
-	// 	return
-	// }
+	if !user.EmailConfirmed {
+		http.Error(res, EmailNotConfirmed, http.StatusBadRequest)
+		return
+	}
 
 	jwt, claims, err := uc.tokensService.GenerateSignedToken(&services.UserClaims{
 		Id:   user.Id,
@@ -281,5 +283,5 @@ func (uc *Users) ConfirmEmail(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	http.Redirect(res, req, "https://google.com?confirmation_successful=true", http.StatusSeeOther)
+	http.Redirect(res, req, uc.redirectionEndpoint, http.StatusSeeOther)
 }
