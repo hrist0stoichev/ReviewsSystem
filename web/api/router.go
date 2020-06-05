@@ -22,6 +22,13 @@ func NewRouter(
 	authMiddleware := middlewares.NewAuth(tokensService, logger)
 
 	router := mux.NewRouter()
+	router.Path("/").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		http.ServeFile(res, req, "/static/index.html")
+	})
+	router.Path("/bundle.js").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		http.ServeFile(res, req, "/static/bundle.js")
+	})
+
 	apiRouter := router.PathPrefix("/api").Subrouter()
 
 	apiV1Router := apiRouter.PathPrefix("/v1").Subrouter()
